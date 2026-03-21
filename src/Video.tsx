@@ -1,6 +1,13 @@
 import React from 'react';
 import { AbsoluteFill, Sequence, interpolate, useCurrentFrame, Easing, Audio, staticFile, spring, useVideoConfig } from 'remotion';
 
+// ========== SMOOTH EASING CURVES ==========
+const smoothEase = Easing.bezier(0.4, 0, 0.2, 1); // Standard smooth ease
+const smoothIn = Easing.bezier(0.4, 0, 1, 1);      // Ease in
+const smoothOut = Easing.bezier(0, 0, 0.2, 1);     // Ease out  
+const smoothInOut = Easing.bezier(0.4, 0, 0.2, 1); // Ease in-out
+const gentleSpring = { damping: 15, stiffness: 100, mass: 1 }; // Gentle spring config
+
 // ========== THEME (UPDATED TO MATCH ORIGINAL) ==========
 const theme = {
   colors: {
@@ -1302,35 +1309,51 @@ const Scene11_VoiceCall: React.FC = () => {
         opacity: 0.5,
       }} />
       
-      {/* "Hey there" text */}
+      {/* "Hey there" text - LEFT side */}
       <div style={{
         position: 'absolute',
-        left: 200,
-        top: '45%',
+        left: 280,
+        top: '50%',
         transform: 'translateY(-50%)',
       }}>
         <div style={{ 
-          fontSize: 76, 
+          fontSize: 72, 
           fontFamily: 'Georgia, serif', 
           color: theme.colors.amber, 
           fontWeight: 700,
           opacity: heyOpacity,
         }}>Hey</div>
         <div style={{ 
-          fontSize: 76, 
+          fontSize: 72, 
           fontFamily: 'Georgia, serif', 
-          color: theme.colors.amber, 
-          fontWeight: 700,
+          color: theme.colors.peach, 
+          fontWeight: 400,
           opacity: thereOpacity,
         }}>there</div>
       </div>
       
-      {/* Voice call modal */}
+      {/* "I'm" text - RIGHT side (matching original) */}
+      <div style={{
+        position: 'absolute',
+        right: 280,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        opacity: interpolate(frame, [45, 60], [0, 1], { extrapolateRight: 'clamp' }),
+      }}>
+        <div style={{ 
+          fontSize: 72, 
+          fontFamily: 'Georgia, serif', 
+          color: theme.colors.amber, 
+          fontWeight: 700,
+        }}>I'm</div>
+      </div>
+      
+      {/* Voice call modal - CENTERED */}
       <div style={{
         position: 'absolute',
         top: '50%',
-        right: 220,
-        transform: `translateY(-50%) scale(${modalScale})`,
+        left: '50%',
+        transform: `translate(-50%, -50%) scale(${modalScale})`,
         width: 400,
         backgroundColor: 'white',
         borderRadius: 28,
@@ -1383,7 +1406,7 @@ const Scene11_VoiceCall: React.FC = () => {
         </div>
         
         {/* Buttons */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 14, alignItems: 'center' }}>
           <div style={{
             backgroundColor: theme.colors.grayLight,
             padding: '12px 20px',
@@ -1394,10 +1417,19 @@ const Scene11_VoiceCall: React.FC = () => {
           }}>US</div>
           <div style={{
             backgroundColor: theme.colors.grayLight,
-            padding: '12px 20px',
+            padding: '12px 16px',
             borderRadius: 12,
-            fontSize: 20,
-          }}>🎤</div>
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={theme.colors.textDark} strokeWidth="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </div>
           <div style={{
             backgroundColor: theme.colors.red,
             color: 'white',
@@ -1408,7 +1440,12 @@ const Scene11_VoiceCall: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-          }}>📞 End</div>
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            End
+          </div>
         </div>
       </div>
     </AbsoluteFill>
