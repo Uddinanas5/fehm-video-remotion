@@ -5,9 +5,9 @@ export const RemotionRoot: React.FC = () => {
   return (
     <>
       <Composition
-        id="FlashcardVideo"
+        id="SALVideo"
         component={MainVideo}
-        durationInFrames={1050}
+        durationInFrames={1051}
         fps={30}
         width={1920}
         height={1080}
