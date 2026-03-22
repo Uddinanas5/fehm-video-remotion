@@ -214,15 +214,15 @@ const Scene3_PainPoint: React.FC = () => {
     extrapolateRight: 'clamp',
   });
 
-  // Staggered text
-  const word1Opacity = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: 'clamp' });
-  const word1Y = interpolate(frame, [0, 10], [20, 0], { easing: smoothOut, extrapolateRight: 'clamp' });
+  // Staggered reveal — starts after punch-in settles
+  const word1Opacity = interpolate(frame, [10, 18], [0, 1], { extrapolateRight: 'clamp' });
+  const word1Y = interpolate(frame, [10, 18], [20, 0], { easing: smoothOut, extrapolateRight: 'clamp' });
 
-  const word2Opacity = interpolate(frame, [13, 23], [0, 1], { extrapolateRight: 'clamp' });
-  const word2Y = interpolate(frame, [13, 23], [20, 0], { easing: smoothOut, extrapolateRight: 'clamp' });
+  const word2Opacity = interpolate(frame, [22, 30], [0, 1], { extrapolateRight: 'clamp' });
+  const word2Y = interpolate(frame, [22, 30], [20, 0], { easing: smoothOut, extrapolateRight: 'clamp' });
 
-  const word3Opacity = interpolate(frame, [26, 36], [0, 1], { extrapolateRight: 'clamp' });
-  const word3Y = interpolate(frame, [26, 36], [20, 0], { easing: smoothOut, extrapolateRight: 'clamp' });
+  const word3Opacity = interpolate(frame, [34, 42], [0, 1], { extrapolateRight: 'clamp' });
+  const word3Y = interpolate(frame, [34, 42], [20, 0], { easing: smoothOut, extrapolateRight: 'clamp' });
 
   // Green SVG cursor
   const cursorOpacity = interpolate(frame, [10, 15], [0, 1], { extrapolateRight: 'clamp' });
@@ -259,50 +259,61 @@ const Scene3_PainPoint: React.FC = () => {
         opacity: sceneInOpacity * sceneOutOpacity,
         transform: `scale(${sceneInScale * sceneOutScale})`,
       }}>
+        {/* Subtle glowing circle behind text */}
         <div style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          textAlign: 'center',
+          width: 1400,
+          height: 1400,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${theme.colors.amber}55 0%, ${theme.colors.amberLight}30 50%, transparent 70%)`,
+          opacity: word1Opacity,
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 20,
+          whiteSpace: 'nowrap',
         }}>
-          {/* Missed texts */}
-          <div style={{
-            fontSize: 56,
+          <span style={{
+            fontSize: 48,
             fontFamily: 'Georgia, serif',
             color: theme.colors.textDark,
             opacity: word1Opacity,
             transform: `translateY(${word1Y}px)`,
-            marginBottom: 16,
-          }}>Missed texts</div>
+          }}>Missed texts</span>
 
           {/* missed bookings pill */}
           <div style={{
-            display: 'inline-block',
-            opacity: word2Opacity,
             transform: `translateY(${word2Y}px) scale(${pillScale})`,
-            marginBottom: 16,
+            opacity: word2Opacity,
           }}>
             <div style={{
-              backgroundColor: `${theme.colors.amber}15`,
+              backgroundColor: 'white',
               border: `2px solid ${theme.colors.amber}`,
               borderRadius: 40,
-              padding: '12px 32px',
-              fontSize: 48,
+              padding: '10px 28px',
+              fontSize: 42,
               fontFamily: 'Georgia, serif',
               color: theme.colors.amber,
               fontWeight: 600,
+              boxShadow: `0 4px 15px ${theme.colors.amber}25`,
             }}>missed bookings</div>
           </div>
 
-          {/* missed revenue */}
-          <div style={{
-            fontSize: 56,
+          <span style={{
+            fontSize: 48,
             fontFamily: 'Georgia, serif',
             color: theme.colors.textDark,
             opacity: word3Opacity,
             transform: `translateY(${word3Y}px)`,
-          }}>missed revenue</div>
+          }}>missed revenue</span>
         </div>
 
         {/* Green SVG cursor */}
@@ -605,309 +616,336 @@ const Scene4_FeatureCards: React.FC = () => {
   );
 };
 
-// ========== SCENE 5: Incoming WhatsApp Message ==========
-const Scene5_IncomingMessage: React.FC = () => {
+// ========== SCENE 5+6: Envelope → Cursor Click → WhatsApp Mockup → Conversation ==========
+const Scene5_EnvelopeToChat: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const modalScale = spring({
+  const envW = 420;
+  const envH = 220;
+  const phoneW = 540;
+  const phoneH = 1080;
+
+  // === PHASE 1: Envelope (0-55) ===
+  const envelopeScale = spring({ frame, fps, config: { damping: 14, stiffness: 90 } });
+  const envelopeOpacity = interpolate(frame, [0, 8], [0, 1], { extrapolateRight: 'clamp' });
+  const flapAngle = interpolate(frame, [25, 45], [0, 180], {
+    easing: Easing.bezier(0.4, 0, 0.2, 1), extrapolateRight: 'clamp', extrapolateLeft: 'clamp',
+  });
+
+  // Message rises out
+  const msgRiseY = interpolate(frame, [42, 58], [60, -120], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const msgRiseOpacity = interpolate(frame, [42, 50], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // Envelope fades after message is out
+  const envFadeOut = interpolate(frame, [55, 65], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // === PHASE 2: Cursor appears, clicks message card (58-72) ===
+  const cursorOpacity = interpolate(frame, [58, 63], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const cursorX = interpolate(frame, [58, 68], [1100, 1010], { easing: smoothEase, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const cursorBaseY = interpolate(frame, [58, 68], [650, 460], { easing: smoothEase, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  // Click dip
+  const clickDip = interpolate(frame, [69, 71, 73], [0, 6, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  // Cursor fades after click
+  const cursorFadeOut = interpolate(frame, [73, 78], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // === PHASE 3: Click → burst out (72-78) ===
+  const msgMoveX = 0;
+  const msgMoveY = frame >= 72 ? -120 : msgRiseY;
+  const msgBurstScale = interpolate(frame, [72, 78], [1, 1.5], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const msgShrink = frame >= 72 ? msgBurstScale : 1;
+  const msgCardFadeOut = interpolate(frame, [72, 78], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // Phone slides up from bottom after burst
+  const phoneOpacity = interpolate(frame, [82, 90], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const phoneSlideY = interpolate(frame, [82, 100], [500, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const phoneScaleBase = 1;
+  const phoneZoom = 1;
+
+  // Pan down — steps down as each message appears
+  const phonePanY = interpolate(
     frame,
-    fps,
-    config: { damping: 12, stiffness: 100 },
+    [100, 133, 158, 166, 193, 201, 226, 234, 261, 269],
+    [0, -50, -50, -110, -110, -180, -180, -240, -240, -320],
+    { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }
+  );
+
+  // === PHASE 4: Conversation — msg1 already there, typing dots before each reply ===
+  // msg1 is always visible with the phone
+  const msg1Opacity = phoneOpacity;
+
+  // Typing dots 1 (before Luxe reply 1)
+  const dots1Opacity = interpolate(frame, [105, 110], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const dots1FadeOut = interpolate(frame, [122, 125], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // msg2: Luxe reply — dots then message
+  const msg2Opacity = interpolate(frame, [125, 133], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const msg2Y = interpolate(frame, [125, 133], [15, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // Sarah typing dots (before msg3)
+  const dots2Opacity = interpolate(frame, [140, 145], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const dots2FadeOut = interpolate(frame, [155, 158], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // msg3: Sarah — "Amara if she's free!"
+  const msg3Opacity = interpolate(frame, [158, 166], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const msg3Y = interpolate(frame, [158, 166], [15, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // Luxe typing dots (before msg4)
+  const dots3Opacity = interpolate(frame, [172, 177], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const dots3FadeOut = interpolate(frame, [190, 193], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // msg4: Luxe — "11am or 2:30pm?"
+  const msg4Opacity = interpolate(frame, [193, 201], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const msg4Y = interpolate(frame, [193, 201], [15, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // Sarah typing dots (before msg5)
+  const dots4Opacity = interpolate(frame, [208, 213], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const dots4FadeOut = interpolate(frame, [223, 226], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // msg5: Sarah — "2:30!"
+  const msg5Opacity = interpolate(frame, [226, 234], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const msg5Y = interpolate(frame, [226, 234], [15, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // Luxe typing dots (before msg6)
+  const dots5Opacity = interpolate(frame, [240, 245], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const dots5FadeOut = interpolate(frame, [258, 261], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // msg6: Luxe — confirmation
+  const msg6Opacity = interpolate(frame, [261, 269], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const msg6Y = interpolate(frame, [261, 269], [15, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // Burst down — shorter hold after last message
+  const burstDownY = interpolate(frame, [285, 295], [0, 600], { easing: Easing.bezier(0.4, 0, 1, 1), extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const burstDownOpacity = interpolate(frame, [285, 295], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+
+  // Chat bubble helper
+  const chatBubbleStyle = (sent: boolean): React.CSSProperties => ({
+    maxWidth: '75%',
+    backgroundColor: sent ? '#DCF8C6' : 'white',
+    borderRadius: sent ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+    padding: '14px 18px',
+    fontSize: 20,
+    fontFamily: "'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    color: '#111',
+    lineHeight: 1.45,
+    alignSelf: sent ? 'flex-end' : 'flex-start',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
   });
 
-  const modalOpacity = interpolate(frame, [0, 15], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
-
-  // Folder drag animation
-  const folderY = interpolate(frame, [20, 50], [150, 0], {
-    easing: Easing.bezier(0.4, 0, 0.2, 1),
-    extrapolateRight: 'clamp',
-  });
-
-  const folderOpacity = interpolate(frame, [20, 35], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
-
-  const folderScale = interpolate(frame, [40, 55], [1, 0.8], {
-    extrapolateRight: 'clamp',
-  });
-
-  // Cursor follows folder
-  const cursorX = interpolate(frame, [20, 50], [900, 760], {
-    easing: Easing.bezier(0.4, 0, 0.2, 1),
-    extrapolateRight: 'clamp',
-  });
-
-  const cursorY = interpolate(frame, [20, 50], [650, 500], {
-    easing: Easing.bezier(0.4, 0, 0.2, 1),
-    extrapolateRight: 'clamp',
-  });
+  const typingDotsJSX = (sent: boolean, opacity: number) => (
+    <div style={{
+      alignSelf: sent ? 'flex-end' : 'flex-start',
+      backgroundColor: sent ? '#DCF8C6' : 'white',
+      borderRadius: sent ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+      padding: '12px 18px', display: 'flex', gap: 5,
+      opacity, boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+    }}>
+      {[0, 1, 2].map((d) => (
+        <div key={d} style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#999',
+          opacity: Math.abs(Math.sin((frame + d * 5) * 0.15)) * 0.6 + 0.4 }} />
+      ))}
+    </div>
+  );
 
   return (
-    <AbsoluteFill style={{ backgroundColor: 'white' }}>
-      {/* Blue curved shapes */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: -100,
-        width: 500,
-        height: '100%',
-        background: 'linear-gradient(180deg, #E8F0FF 0%, #B8D4FF 100%)',
-        borderRadius: '0 250px 250px 0',
-        opacity: 0.7,
-      }} />
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        right: -100,
-        width: 500,
-        height: '100%',
-        background: 'linear-gradient(180deg, #E8F0FF 0%, #B8D4FF 100%)',
-        borderRadius: '250px 0 0 250px',
-        opacity: 0.7,
-      }} />
+    <AbsoluteFill style={{ backgroundColor: theme.colors.cream }}>
 
-      {/* Modal */}
+      {/* === ENVELOPE === */}
       <div style={{
         position: 'absolute',
-        top: '42%',
+        top: '50%',
         left: '50%',
-        transform: `translate(-50%, -50%) scale(${modalScale})`,
+        transform: `translate(-50%, -50%) scale(${Math.max(0, envelopeScale)})`,
+        opacity: envelopeOpacity * envFadeOut,
+        width: envW,
+        height: envH + 160,
+      }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: envW, height: envH, perspective: 800 }}>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, width: envW, height: envH / 2,
+            transformOrigin: 'top center', transform: `rotateX(${flapAngle}deg)`,
+            zIndex: flapAngle > 90 ? 0 : 15,
+          }}>
+            <svg width={envW} height={envH / 2} viewBox={`0 0 ${envW} ${envH / 2}`}>
+              <path d={`M0 0 L${envW / 2} ${envH / 2} L${envW} 0 Z`} fill={theme.colors.amber} />
+            </svg>
+          </div>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: envW, height: envH, backgroundColor: theme.colors.peachLight, borderRadius: 20, zIndex: 0 }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, width: envW, height: envH, zIndex: 10, overflow: 'hidden', borderRadius: '0 0 20px 20px' }}>
+            <svg width={envW} height={envH} viewBox={`0 0 ${envW} ${envH}`}>
+              <path d={`M0 0 L${envW / 2} ${envH * 0.55} L${envW} 0 L${envW} ${envH} Q${envW} ${envH} ${envW - 20} ${envH} L20 ${envH} Q0 ${envH} 0 ${envH} Z`} fill={theme.colors.amberLight} />
+              <path d={`M0 0 L${envW / 2} ${envH * 0.55} L${envW} 0`} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
+            </svg>
+          </div>
+          <div style={{ position: 'absolute', bottom: -15, left: '10%', width: '80%', height: 30, borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.06)', filter: 'blur(10px)', zIndex: -1 }} />
+        </div>
+      </div>
+
+      {/* === MESSAGE CARD — shrinks toward phone then disappears === */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: `translate(-50%, -50%) translateY(${frame >= 72 ? msgMoveY : msgRiseY}px) translateX(${msgMoveX}px) scale(${frame >= 72 ? msgShrink : 1})`,
         width: 750,
         backgroundColor: 'white',
         borderRadius: 24,
-        padding: 32,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
-        border: '1px solid #E5E7EB',
-        opacity: modalOpacity,
+        padding: '40px 48px',
+        boxShadow: '0 10px 50px rgba(0,0,0,0.12)',
+        opacity: msgRiseOpacity * msgCardFadeOut,
+        zIndex: 25,
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <span style={{ fontSize: 22, fontWeight: 600, color: theme.colors.textDark }}>Incoming Messages</span>
+        <div style={{ fontSize: 22, color: theme.colors.amber, fontWeight: 600, marginBottom: 14 }}>Sarah M.</div>
+        <div style={{ fontSize: 32, color: theme.colors.textDark, lineHeight: 1.5 }}>
+          Hi! Can I book a haircut for this Saturday?
+        </div>
+        <div style={{ fontSize: 16, color: theme.colors.gray, marginTop: 16, textAlign: 'right' }}>2:14 PM</div>
+      </div>
+
+      {/* === GREEN SVG CURSOR === */}
+      <svg
+        style={{
+          position: 'absolute',
+          left: cursorX,
+          top: cursorBaseY + clickDip,
+          opacity: cursorOpacity * cursorFadeOut,
+          zIndex: 30,
+          filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.15))',
+        }}
+        width="32" height="40" viewBox="0 0 24 30" fill="none"
+      >
+        <path d="M5 2L5 22L10 17L15 26L18 24.5L13 15.5L20 15.5L5 2Z"
+          fill={theme.colors.amber} stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
+      </svg>
+
+      {/* === WHATSAPP PHONE MOCKUP === */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transformOrigin: 'top center',
+        transform: `translate(-50%, -15%) translateY(${phoneSlideY + phonePanY + burstDownY}px) scale(${phoneScaleBase * phoneZoom})`,
+        width: phoneW,
+        height: phoneH,
+        opacity: phoneOpacity * burstDownOpacity,
+        borderRadius: 36,
+        overflow: 'hidden',
+        boxShadow: '0 20px 70px rgba(0,0,0,0.15)',
+        border: '3px solid #2A2A2A',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {/* Dark green header */}
+        <div style={{
+          backgroundColor: '#075E54',
+          padding: '14px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          flexShrink: 0,
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 12H5M12 19l-7-7 7-7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
           <div style={{
-            backgroundColor: theme.colors.blue,
-            color: 'white',
-            padding: '10px 22px',
-            borderRadius: 24,
-            fontSize: 15,
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
+            width: 34, height: 34, borderRadius: '50%', backgroundColor: '#ccc',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            WhatsApp
+            <span style={{ fontSize: 16, color: '#666' }}>L</span>
           </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: 'white', fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+              Luxe Beauty
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><circle cx="12" cy="12" r="10" fill="#25D366"/><path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11 }}>Business Account</div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
         </div>
 
-        {/* Dashed upload area */}
+        {/* Chat area */}
         <div style={{
-          border: '2px dashed #D1D5DB',
-          borderRadius: 16,
-          padding: 50,
+          flex: 1,
+          backgroundColor: '#ECE5DD',
+          padding: '12px 14px',
           display: 'flex',
           flexDirection: 'column',
+          gap: 6,
+          overflow: 'hidden',
+        }}>
+          {/* Message 1: Sarah — already there with phone */}
+          <div style={{ ...chatBubbleStyle(false), opacity: msg1Opacity }}>
+            Hi! Can I book a haircut for this Saturday?
+            <div style={{ fontSize: 10, color: '#999', textAlign: 'right', marginTop: 3 }}>2:14 PM</div>
+          </div>
+
+          {/* Luxe typing dots → msg2 */}
+          {dots1Opacity > 0 && dots1FadeOut > 0 && typingDotsJSX(true, dots1Opacity * dots1FadeOut)}
+          <div style={{ ...chatBubbleStyle(true), opacity: msg2Opacity, transform: `translateY(${msg2Y}px)` }}>
+            Hi Sarah! Saturday is looking good 😊 Do you have a preferred stylist?
+            <div style={{ fontSize: 10, color: '#999', textAlign: 'right', marginTop: 3, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3 }}>
+              2:14 PM
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#53BDEB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 12 5 16 12 6"/><polyline points="7 12 11 16 18 6"/></svg>
+            </div>
+          </div>
+
+          {/* Sarah typing dots → msg3 */}
+          {dots2Opacity > 0 && dots2FadeOut > 0 && typingDotsJSX(false, dots2Opacity * dots2FadeOut)}
+          <div style={{ ...chatBubbleStyle(false), opacity: msg3Opacity, transform: `translateY(${msg3Y}px)` }}>
+            Amara if she's free!
+            <div style={{ fontSize: 10, color: '#999', textAlign: 'right', marginTop: 3 }}>2:15 PM</div>
+          </div>
+
+          {/* Luxe typing dots → msg4 */}
+          {dots3Opacity > 0 && dots3FadeOut > 0 && typingDotsJSX(true, dots3Opacity * dots3FadeOut)}
+          <div style={{ ...chatBubbleStyle(true), opacity: msg4Opacity, transform: `translateY(${msg4Y}px)` }}>
+            She's got 11am or 2:30pm open. Which works better?
+            <div style={{ fontSize: 10, color: '#999', textAlign: 'right', marginTop: 3, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3 }}>
+              2:15 PM
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#53BDEB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 12 5 16 12 6"/><polyline points="7 12 11 16 18 6"/></svg>
+            </div>
+          </div>
+
+          {/* Sarah typing dots → msg5 */}
+          {dots4Opacity > 0 && dots4FadeOut > 0 && typingDotsJSX(false, dots4Opacity * dots4FadeOut)}
+          <div style={{ ...chatBubbleStyle(false), opacity: msg5Opacity, transform: `translateY(${msg5Y}px)` }}>
+            2:30!
+            <div style={{ fontSize: 10, color: '#999', textAlign: 'right', marginTop: 3 }}>2:16 PM</div>
+          </div>
+
+          {/* Luxe typing dots → msg6 */}
+          {dots5Opacity > 0 && dots5FadeOut > 0 && typingDotsJSX(true, dots5Opacity * dots5FadeOut)}
+          <div style={{ ...chatBubbleStyle(true), opacity: msg6Opacity, transform: `translateY(${msg6Y}px)` }}>
+            Done! Haircut with Amara, Saturday 2:30pm. We'll send a reminder the day before 💫
+            <div style={{ fontSize: 10, color: '#999', textAlign: 'right', marginTop: 3, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3 }}>
+              2:16 PM
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#53BDEB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 12 5 16 12 6"/><polyline points="7 12 11 16 18 6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Input bar */}
+        <div style={{
+          backgroundColor: '#F0F0F0',
+          padding: '8px 12px',
+          display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 180,
-          position: 'relative',
+          gap: 10,
+          flexShrink: 0,
         }}>
-          <div style={{ fontSize: 32, color: '#9CA3AF', marginBottom: 12 }}>↑</div>
-        </div>
-      </div>
-
-      {/* 3D Folder being dragged */}
-      <div style={{
-        position: 'absolute',
-        top: 400,
-        left: '50%',
-        transform: `translate(-50%, ${folderY}px) scale(${folderScale})`,
-        opacity: folderOpacity,
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 10,
-          left: 10,
-          width: 140,
-          height: 110,
-          backgroundColor: 'rgba(0,0,0,0.15)',
-          borderRadius: 16,
-          filter: 'blur(10px)',
-        }} />
-        <div style={{
-          position: 'relative',
-          width: 140,
-          height: 110,
-          background: 'linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%)',
-          borderRadius: 16,
-          padding: 16,
-          boxShadow: '0 8px 30px rgba(59, 130, 246, 0.4)',
-        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="10" r="0.5" fill="#999"/><circle cx="15" cy="10" r="0.5" fill="#999"/></svg>
           <div style={{
-            position: 'absolute',
-            top: -12,
-            left: 16,
-            width: 50,
-            height: 16,
-            backgroundColor: '#60A5FA',
-            borderRadius: '8px 8px 0 0',
-          }} />
-          <div style={{ marginTop: 20 }}>
-            <div style={{ width: '80%', height: 8, backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 4, marginBottom: 8 }} />
-            <div style={{ width: '60%', height: 8, backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: 4 }} />
-          </div>
+            flex: 1, backgroundColor: 'white', borderRadius: 20, padding: '8px 16px',
+            fontSize: 14, color: '#999',
+          }}>Type a message</div>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           <div style={{
-            position: 'absolute',
-            bottom: 12,
-            left: 16,
-            right: 16,
-            fontSize: 12,
-            color: 'white',
-            fontWeight: 500,
+            width: 36, height: 36, borderRadius: '50%', backgroundColor: '#075E54',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            New Client Inquiry
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="white" strokeWidth="2"/></svg>
           </div>
         </div>
       </div>
-
-      {/* Hand cursor */}
-      <div style={{
-        position: 'absolute',
-        left: cursorX,
-        top: cursorY,
-        fontSize: 32,
-        opacity: folderOpacity,
-        transform: 'rotate(-15deg)',
-      }}>👆</div>
-    </AbsoluteFill>
-  );
-};
-
-// ========== SCENE 6: Message + SAL is on it ==========
-const Scene6_SALOnIt: React.FC = () => {
-  const frame = useCurrentFrame();
-
-  const fileOpacity = interpolate(frame, [0, 20], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
-
-  const buttonOpacity = interpolate(frame, [15, 30], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
-
-  const buttonScale = interpolate(frame, [15, 35], [0.9, 1], {
-    easing: Easing.bezier(0, 0, 0.2, 1),
-    extrapolateRight: 'clamp',
-  });
-
-  const cursorX = interpolate(frame, [35, 55], [1000, 850], {
-    easing: Easing.bezier(0.4, 0, 0.2, 1),
-    extrapolateRight: 'clamp',
-  });
-
-  const cursorY = interpolate(frame, [35, 55], [500, 650], {
-    easing: Easing.bezier(0.4, 0, 0.2, 1),
-    extrapolateRight: 'clamp',
-  });
-
-  const cursorOpacity = interpolate(frame, [35, 45], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
-
-  return (
-    <AbsoluteFill style={{ backgroundColor: 'white' }}>
-      {/* Blue curved shapes */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: -100,
-        width: 500,
-        height: '100%',
-        background: 'linear-gradient(180deg, #E8F0FF 0%, #B8D4FF 100%)',
-        borderRadius: '0 250px 250px 0',
-        opacity: 0.7,
-      }} />
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        right: -100,
-        width: 500,
-        height: '100%',
-        background: 'linear-gradient(180deg, #E8F0FF 0%, #B8D4FF 100%)',
-        borderRadius: '250px 0 0 250px',
-        opacity: 0.7,
-      }} />
-
-      {/* Modal with message */}
-      <div style={{
-        position: 'absolute',
-        top: '42%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 750,
-        backgroundColor: 'white',
-        borderRadius: 24,
-        padding: 32,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
-        border: '1px solid #E5E7EB',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <span style={{ fontSize: 22, fontWeight: 600, color: theme.colors.textDark }}>Incoming Messages</span>
-          <div style={{
-            backgroundColor: theme.colors.blue,
-            color: 'white',
-            padding: '10px 22px',
-            borderRadius: 24,
-            fontSize: 15,
-            fontWeight: 500,
-          }}>WhatsApp</div>
-        </div>
-
-        <div style={{
-          border: '2px dashed #D1D5DB',
-          borderRadius: 16,
-          padding: 40,
-        }}>
-          <div style={{
-            backgroundColor: theme.colors.blueLight,
-            borderRadius: 12,
-            padding: '16px 24px',
-            opacity: fileOpacity,
-          }}>
-            <span style={{ color: theme.colors.textDark, fontSize: 17, fontWeight: 500 }}>Hey, do you have any availability this Saturday?</span>
-          </div>
-        </div>
-      </div>
-
-      {/* SAL is on it button */}
-      <div style={{
-        position: 'absolute',
-        top: '72%',
-        left: '50%',
-        transform: `translateX(-50%) scale(${buttonScale})`,
-        background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
-        color: 'white',
-        padding: '18px 36px',
-        borderRadius: 32,
-        fontSize: 18,
-        fontWeight: 600,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        boxShadow: '0 8px 25px rgba(99, 102, 241, 0.4)',
-        opacity: buttonOpacity,
-      }}>
-        <span style={{ fontSize: 20 }}>✨</span> SAL is on it
-      </div>
-
-      {/* Cursor */}
-      <div style={{
-        position: 'absolute',
-        left: cursorX,
-        top: cursorY,
-        fontSize: 32,
-        opacity: cursorOpacity,
-      }}>👆</div>
     </AbsoluteFill>
   );
 };
@@ -928,12 +966,43 @@ const Scene7_ClientMessages: React.FC = () => {
   });
 
   const buttonScale = interpolate(frame, [35, 55], [0.8, 1], {
-    easing: Easing.bezier(0, 0, 0.2, 1),
+    easing: smoothOut,
     extrapolateRight: 'clamp',
   });
 
+  // Cursor drifts to button
+  const cursorOpacity = interpolate(frame, [40, 48], [0, 1], { extrapolateRight: 'clamp' });
+  const cursorX = interpolate(frame, [40, 55], [1100, 1000], { easing: smoothEase, extrapolateRight: 'clamp' });
+  const cursorBaseY = interpolate(frame, [40, 55], [700, 560], { easing: smoothEase, extrapolateRight: 'clamp' });
+  const clickDip = interpolate(frame, [56, 58, 60], [0, 6, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const cursorFadeOut = interpolate(frame, [60, 65], [1, 0], { extrapolateRight: 'clamp' });
+
+  // Punch in at start
+  const sceneInScale = interpolate(frame, [0, 8], [1.3, 1], {
+    easing: smoothOut,
+    extrapolateRight: 'clamp',
+  });
+  const sceneInOpacity = interpolate(frame, [0, 8], [0, 1], {
+    extrapolateRight: 'clamp',
+  });
+
+  // Very smooth continuous zoom in — never stops, scene cuts mid-zoom
+  const zoomIn = interpolate(frame, [20, 72], [1, 1.5], {
+    easing: Easing.bezier(0.15, 0, 0.4, 1),
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
+
+  const sceneOutOpacity = 1;
+
+  const combinedScale = sceneInScale * zoomIn;
+
   return (
     <AbsoluteFill style={{ backgroundColor: 'white' }}>
+      <AbsoluteFill style={{
+        opacity: sceneInOpacity * sceneOutOpacity,
+        transform: `scale(${combinedScale})`,
+      }}>
       {/* 2x2 Grid */}
       <div style={{
         position: 'absolute',
@@ -964,8 +1033,8 @@ const Scene7_ClientMessages: React.FC = () => {
                 backgroundColor: 'white',
                 borderRadius: 24,
                 padding: 45,
-                boxShadow: '0 2px 15px rgba(0,0,0,0.04)',
-                border: '2px solid #E5E7EB',
+                boxShadow: '0 2px 15px rgba(74, 125, 255, 0.08)',
+                border: '2px solid #D0E3FF',
                 opacity: cardOpacity,
                 transform: `translateY(${cardY}px)`,
                 minHeight: 200,
@@ -1011,8 +1080,25 @@ const Scene7_ClientMessages: React.FC = () => {
         opacity: buttonOpacity,
         zIndex: 10,
       }}>
-        <span>✨</span> All handled by SAL
+        <span>▶</span> All handled by SAL
       </div>
+
+      {/* Green SVG cursor */}
+      <svg
+        style={{
+          position: 'absolute',
+          left: cursorX,
+          top: cursorBaseY + clickDip,
+          opacity: cursorOpacity * cursorFadeOut,
+          zIndex: 20,
+          filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.15))',
+        }}
+        width="32" height="40" viewBox="0 0 24 30" fill="none"
+      >
+        <path d="M5 2L5 22L10 17L15 26L18 24.5L13 15.5L20 15.5L5 2Z"
+          fill={theme.colors.amber} stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
+      </svg>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
@@ -1021,12 +1107,12 @@ const Scene7_ClientMessages: React.FC = () => {
 const Scene8_ClientTyping: React.FC = () => {
   const frame = useCurrentFrame();
 
-  const cardScale = interpolate(frame, [0, 20], [0.9, 1], {
-    easing: Easing.bezier(0, 0, 0.2, 1),
+  const cardScale = interpolate(frame, [0, 10], [1.3, 1], {
+    easing: smoothOut,
     extrapolateRight: 'clamp',
   });
 
-  const cardOpacity = interpolate(frame, [0, 15], [0, 1], {
+  const cardOpacity = interpolate(frame, [0, 8], [0, 1], {
     extrapolateRight: 'clamp',
   });
 
@@ -1679,43 +1765,38 @@ export const MainVideo: React.FC = () => {
         <Scene4_FeatureCards />
       </Sequence>
 
-      {/* Scene 5: Incoming Message — overlaps Scene 4 fade out */}
-      <Sequence from={301} durationInFrames={90}>
-        <Scene5_IncomingMessage />
-      </Sequence>
-
-      {/* Scene 6: Message + SAL is on it */}
-      <Sequence from={391} durationInFrames={90}>
-        <Scene6_SALOnIt />
+      {/* Scene 5+6: Envelope → Phone → Conversation */}
+      <Sequence from={301} durationInFrames={300}>
+        <Scene5_EnvelopeToChat />
       </Sequence>
 
       {/* Scene 7: Grid of client messages */}
-      <Sequence from={481} durationInFrames={90}>
+      <Sequence from={591} durationInFrames={72}>
         <Scene7_ClientMessages />
       </Sequence>
 
-      {/* Scene 8: Client message typed */}
-      <Sequence from={571} durationInFrames={90}>
+      {/* Scene 8: Client message typed — punches in as Scene 7 zooms out */}
+      <Sequence from={658} durationInFrames={90}>
         <Scene8_ClientTyping />
       </Sequence>
 
       {/* Scene 9: SAL's reply + actions */}
-      <Sequence from={661} durationInFrames={90}>
+      <Sequence from={771} durationInFrames={90}>
         <Scene9_SALReply />
       </Sequence>
 
       {/* Scene 10: Speaks their language */}
-      <Sequence from={751} durationInFrames={90}>
+      <Sequence from={861} durationInFrames={90}>
         <Scene10_Multilingual />
       </Sequence>
 
       {/* Scene 11: Never miss again */}
-      <Sequence from={841} durationInFrames={120}>
+      <Sequence from={951} durationInFrames={120}>
         <Scene11_NeverMiss />
       </Sequence>
 
       {/* Scene 12: Final Logo */}
-      <Sequence from={961} durationInFrames={90}>
+      <Sequence from={1071} durationInFrames={90}>
         <Scene12_FinalLogo />
       </Sequence>
     </AbsoluteFill>
