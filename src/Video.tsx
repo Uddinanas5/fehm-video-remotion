@@ -54,46 +54,46 @@ const Scene1_LogoIntro: React.FC = () => {
   });
 
   // Font size: scales up (0-20), then shrinks into icon (20-45)
-  const salFontSize = interpolate(frame, [0, 20, 45], [120, 140, 34], {
+  const salFontSize = interpolate(frame, [0, 18, 35], [120, 140, 48], {
     easing: Easing.bezier(0.4, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
   // Grid: fades in (0-20), then fades out (20-35)
-  const gridOpacity = interpolate(frame, [3, 20, 35], [0, 0.5, 0], {
+  const gridOpacity = interpolate(frame, [3, 18, 28], [0, 0.5, 0], {
     easing: Easing.bezier(0.4, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
   // Background: green gradient → cream (starts at frame 20)
-  const bgTransition = interpolate(frame, [20, 42], [0, 1], {
+  const bgTransition = interpolate(frame, [12, 28], [0, 1], {
     easing: Easing.bezier(0.4, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
   // Text shadow fades out as it shrinks
-  const shadowOpacity = interpolate(frame, [20, 35], [0.25, 0], {
+  const shadowOpacity = interpolate(frame, [12, 22], [0.25, 0], {
     extrapolateRight: 'clamp',
   });
 
   // Icon box appears behind SAL as it shrinks
-  const iconBoxOpacity = interpolate(frame, [32, 45], [0, 1], {
+  const iconBoxOpacity = interpolate(frame, [20, 28], [0, 1], {
     easing: Easing.bezier(0.4, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
-  const iconBoxScale = interpolate(frame, [32, 45], [0.5, 1], {
+  const iconBoxScale = interpolate(frame, [20, 28], [0.5, 1], {
     easing: Easing.bezier(0, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
   // meetsal.ai reveals simultaneously with SAL sliding left
-  const textReveal = interpolate(frame, [47, 65], [0, 100], {
+  const textReveal = interpolate(frame, [32, 48], [0, 100], {
     easing: Easing.bezier(0.4, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
-  const textOpacity = interpolate(frame, [47, 52], [0, 1], {
+  const textOpacity = interpolate(frame, [20, 24], [0, 1], {
     extrapolateRight: 'clamp',
   });
 
@@ -139,62 +139,83 @@ const Scene1_LogoIntro: React.FC = () => {
         <line x1="60%" y1="0" x2="60%" y2="100%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="10,10" />
       </svg>
 
-      {/* SAL + meetsal.ai row */}
+      {/* SAL → S + meetsal.ai — centered lockup */}
       <div style={{
         position: 'absolute',
         top: '50%',
         left: '50%',
-        transform: `translate(-50%, -50%) scale(${breatheScale * dropScale})`,
-        display: 'flex',
-        alignItems: 'center',
+        transform: `translate(-50%, -50%) scale(${frame < 20 ? breatheScale : interpolate(frame, [32, 97], [1, 1.65], { easing: Easing.bezier(0.42, 0, 1, 1), extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })} ) scale(${dropScale})`,
         opacity: logoOpacity * dropOpacity,
       }}>
-        {/* SAL icon */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          {/* Green box */}
+        {/* Phase 1: SAL text (big, centered) */}
+        {frame < 20 && (
           <div style={{
-            position: 'absolute',
-            width: 110,
-            height: 85,
-            background: `linear-gradient(145deg, ${theme.colors.amberLight} 0%, ${theme.colors.amber} 100%)`,
-            borderRadius: 18,
-            opacity: iconBoxOpacity,
-            transform: `scale(${iconBoxScale})`,
-            boxShadow: '0 6px 20px rgba(45, 182, 104, 0.3)',
-          }} />
-
-          {/* SAL text */}
-          <div style={{
-            position: 'relative',
             fontFamily: 'Georgia, serif',
             fontWeight: 400,
             color: 'white',
             fontSize: salFontSize,
             textShadow: `4px 4px 12px rgba(0,0,0,${shadowOpacity})`,
-            letterSpacing: salFontSize > 40 ? 4 : 2,
+            letterSpacing: 4,
             whiteSpace: 'nowrap',
+            textAlign: 'center',
           }}>SAL</div>
-        </div>
+        )}
 
-        {/* meetsal.ai — slides out from behind the SAL icon */}
-        <div style={{
-          overflow: 'hidden',
-          width: interpolate(frame, [47, 65], [0, 430], {
-            easing: Easing.bezier(0.4, 0, 0.2, 1),
-            extrapolateRight: 'clamp',
-            extrapolateLeft: 'clamp',
-          }),
-          flexShrink: 0,
-        }}>
-          <span style={{
-            fontSize: 64,
-            fontFamily: 'Georgia, serif',
-            color: theme.colors.amber,
-            whiteSpace: 'nowrap',
-            opacity: textOpacity,
-            marginLeft: 16,
-          }}>meetsal.ai</span>
-        </div>
+        {/* Phase 2: S icon + meetsal.ai slide apart */}
+        {frame >= 20 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+          }}>
+            {/* S icon */}
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 110,
+              height: 85,
+            }}>
+              <div style={{
+                position: 'absolute',
+                width: 110,
+                height: 85,
+                background: `linear-gradient(145deg, ${theme.colors.amberLight} 0%, ${theme.colors.amber} 100%)`,
+                borderRadius: 18,
+                opacity: iconBoxOpacity,
+                transform: `scale(${iconBoxScale})`,
+                boxShadow: '0 6px 20px rgba(45, 182, 104, 0.3)',
+              }} />
+              <div style={{
+                position: 'relative',
+                fontFamily: 'Georgia, serif',
+                fontWeight: 400,
+                color: 'white',
+                fontSize: salFontSize,
+                whiteSpace: 'nowrap',
+              }}>S</div>
+            </div>
+
+            {/* meetsal.ai — mask reveal from left */}
+            <div style={{
+              overflow: 'hidden',
+              width: interpolate(frame, [20, 38], [0, 460], {
+                easing: Easing.bezier(0.4, 0, 0.2, 1),
+                extrapolateRight: 'clamp',
+                extrapolateLeft: 'clamp',
+              }),
+            }}>
+              <span style={{
+                fontSize: 64,
+                fontFamily: 'Georgia, serif',
+                color: theme.colors.amber,
+                whiteSpace: 'nowrap',
+                opacity: textOpacity,
+              }}>meetsal.ai</span>
+            </div>
+          </div>
+        )}
       </div>
     </AbsoluteFill>
   );
@@ -714,9 +735,9 @@ const Scene5_EnvelopeToChat: React.FC = () => {
   const msg6Opacity = interpolate(frame, [261, 269], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
   const msg6Y = interpolate(frame, [261, 269], [15, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
 
-  // Burst down — shorter hold after last message
-  const burstDownY = interpolate(frame, [285, 295], [0, 600], { easing: Easing.bezier(0.4, 0, 1, 1), extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
-  const burstDownOpacity = interpolate(frame, [285, 295], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  // Burst down — hold last message 1 second longer
+  const burstDownY = interpolate(frame, [315, 325], [0, 600], { easing: Easing.bezier(0.4, 0, 1, 1), extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const burstDownOpacity = interpolate(frame, [315, 325], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
 
   // Chat bubble helper
   const chatBubbleStyle = (sent: boolean): React.CSSProperties => ({
@@ -818,6 +839,38 @@ const Scene5_EnvelopeToChat: React.FC = () => {
           fill={theme.colors.amber} stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
       </svg>
 
+      {/* SAL label — fixed left, slides up from bottom */}
+      <div style={{
+        position: 'absolute',
+        left: 180,
+        top: '45%',
+        transform: `translateY(${interpolate(frame, [85, 108], [80, -50], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })}%)`,
+        opacity: interpolate(frame, [85, 98], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) * burstDownOpacity,
+      }}>
+        <div style={{
+          fontSize: 72,
+          fontFamily: 'Georgia, serif',
+          fontWeight: 700,
+          color: theme.colors.amber,
+        }}>SAL</div>
+      </div>
+
+      {/* Answers label — fixed right, slides up from bottom */}
+      <div style={{
+        position: 'absolute',
+        right: 180,
+        top: '45%',
+        transform: `translateY(${interpolate(frame, [100, 125], [80, -50], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })}%)`,
+        opacity: interpolate(frame, [100, 115], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) * burstDownOpacity,
+      }}>
+        <div style={{
+          fontSize: 72,
+          fontFamily: 'Georgia, serif',
+          fontWeight: 700,
+          color: theme.colors.amber,
+        }}>Answers</div>
+      </div>
+
       {/* === WHATSAPP PHONE MOCKUP === */}
       <div style={{
         position: 'absolute',
@@ -825,9 +878,11 @@ const Scene5_EnvelopeToChat: React.FC = () => {
         left: '50%',
         transformOrigin: 'top center',
         transform: `translate(-50%, -15%) translateY(${phoneSlideY + phonePanY + burstDownY}px) scale(${phoneScaleBase * phoneZoom})`,
+        opacity: phoneOpacity * burstDownOpacity,
+      }}>
+      <div style={{
         width: phoneW,
         height: phoneH,
-        opacity: phoneOpacity * burstDownOpacity,
         borderRadius: 36,
         overflow: 'hidden',
         boxShadow: '0 20px 70px rgba(0,0,0,0.15)',
@@ -946,6 +1001,7 @@ const Scene5_EnvelopeToChat: React.FC = () => {
           </div>
         </div>
       </div>
+      </div>
     </AbsoluteFill>
   );
 };
@@ -961,21 +1017,28 @@ const Scene7_ClientMessages: React.FC = () => {
     'What are your prices for balayage?',
   ];
 
-  const buttonOpacity = interpolate(frame, [35, 50], [0, 1], {
+  // Button appears after cards finish (last card done at ~42)
+  const buttonOpacity = interpolate(frame, [45, 58], [0, 1], {
     extrapolateRight: 'clamp',
   });
 
-  const buttonScale = interpolate(frame, [35, 55], [0.8, 1], {
+  const buttonScale = interpolate(frame, [45, 60], [0.8, 1], {
     easing: smoothOut,
     extrapolateRight: 'clamp',
   });
 
-  // Cursor drifts to button
-  const cursorOpacity = interpolate(frame, [40, 48], [0, 1], { extrapolateRight: 'clamp' });
-  const cursorX = interpolate(frame, [40, 55], [1100, 1000], { easing: smoothEase, extrapolateRight: 'clamp' });
-  const cursorBaseY = interpolate(frame, [40, 55], [700, 560], { easing: smoothEase, extrapolateRight: 'clamp' });
-  const clickDip = interpolate(frame, [56, 58, 60], [0, 6, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const cursorFadeOut = interpolate(frame, [60, 65], [1, 0], { extrapolateRight: 'clamp' });
+  // Cursor drifts to button center
+  const cursorOpacity = interpolate(frame, [52, 58], [0, 1], { extrapolateRight: 'clamp' });
+  const cursorX = interpolate(frame, [52, 64], [1100, 990], { easing: smoothEase, extrapolateRight: 'clamp' });
+  const cursorBaseY = interpolate(frame, [52, 64], [700, 555], { easing: smoothEase, extrapolateRight: 'clamp' });
+  const clickDip = interpolate(frame, [66, 68, 70], [0, 8, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const cursorFadeOut = interpolate(frame, [72, 76], [1, 0], { extrapolateRight: 'clamp' });
+
+  // Button press effect on click
+  const buttonPress = interpolate(frame, [66, 68, 70, 73], [1, 0.92, 1.05, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // Punch in at start
   const sceneInScale = interpolate(frame, [0, 8], [1.3, 1], {
@@ -986,8 +1049,8 @@ const Scene7_ClientMessages: React.FC = () => {
     extrapolateRight: 'clamp',
   });
 
-  // Very smooth continuous zoom in — never stops, scene cuts mid-zoom
-  const zoomIn = interpolate(frame, [20, 72], [1, 1.5], {
+  // Zoom in starts after cards are done, smooth
+  const zoomIn = interpolate(frame, [50, 74], [1, 1.45], {
     easing: Easing.bezier(0.15, 0, 0.4, 1),
     extrapolateRight: 'clamp',
     extrapolateLeft: 'clamp',
@@ -996,6 +1059,16 @@ const Scene7_ClientMessages: React.FC = () => {
   const sceneOutOpacity = 1;
 
   const combinedScale = sceneInScale * zoomIn;
+
+  // Cards spread to corners as zoom increases
+  const spreadAmount = interpolate(frame, [50, 74], [0, 40], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  // Spread directions: top-left, top-right, bottom-left, bottom-right
+  const spreadOffsets = [
+    { x: -spreadAmount, y: -spreadAmount },
+    { x: spreadAmount, y: -spreadAmount },
+    { x: -spreadAmount, y: spreadAmount },
+    { x: spreadAmount, y: spreadAmount },
+  ];
 
   return (
     <AbsoluteFill style={{ backgroundColor: 'white' }}>
@@ -1036,7 +1109,7 @@ const Scene7_ClientMessages: React.FC = () => {
                 boxShadow: '0 2px 15px rgba(74, 125, 255, 0.08)',
                 border: '2px solid #D0E3FF',
                 opacity: cardOpacity,
-                transform: `translateY(${cardY}px)`,
+                transform: `translateX(${spreadOffsets[i].x}px) translateY(${cardY + spreadOffsets[i].y}px)`,
                 minHeight: 200,
                 display: 'flex',
                 flexDirection: 'column',
@@ -1066,7 +1139,7 @@ const Scene7_ClientMessages: React.FC = () => {
         position: 'absolute',
         top: '50%',
         left: '50%',
-        transform: `translate(-50%, -50%) scale(${buttonScale})`,
+        transform: `translate(-50%, -50%) scale(${buttonScale * buttonPress})`,
         background: `linear-gradient(135deg, ${theme.colors.amberLight} 0%, ${theme.colors.amber} 100%)`,
         color: 'white',
         padding: '18px 36px',
@@ -1076,7 +1149,7 @@ const Scene7_ClientMessages: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        boxShadow: `0 8px 25px ${theme.colors.amber}60`,
+        boxShadow: `0 ${8 * buttonPress}px ${25 * buttonPress}px ${theme.colors.amber}60`,
         opacity: buttonOpacity,
         zIndex: 10,
       }}>
@@ -1321,138 +1394,207 @@ const Scene10_Multilingual: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const cardScale = spring({
-    frame,
-    fps,
-    config: { damping: 12, stiffness: 100 },
-  });
+  const languages = [
+    { name: 'English', native: 'Hello!', flag: '🇬🇧' },
+    { name: 'Arabic', native: '!مرحبا', flag: '🇸🇦' },
+    { name: 'French', native: 'Bonjour!', flag: '🇫🇷' },
+    { name: 'Spanish', native: '¡Hola!', flag: '🇪🇸' },
+    { name: 'Thai', native: 'สวัสดี!', flag: '🇹🇭' },
+    { name: 'Portuguese', native: 'Olá!', flag: '🇧🇷' },
+    { name: 'Mandarin', native: '你好!', flag: '🇨🇳' },
+    { name: 'Tagalog', native: 'Kumusta!', flag: '🇵🇭' },
+  ];
 
-  const cardOpacity = interpolate(frame, [0, 15], [0, 1], {
+  // Click timings — evenly spaced, slight acceleration at end
+  const clickFrames = [0, 33, 55, 75, 93, 109, 125, 139];
+
+  // Which language is showing
+  let currentLang = 0;
+  for (let i = clickFrames.length - 1; i >= 0; i--) {
+    if (frame >= clickFrames[i]) {
+      currentLang = i;
+      break;
+    }
+  }
+
+  const lang = languages[currentLang];
+
+  // Start smaller, fade in
+  const sceneInScale = interpolate(frame, [0, 10], [1.3, 1], { easing: smoothOut, extrapolateRight: 'clamp' });
+  const sceneInOpacity = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: 'clamp' });
+
+  // Start small, slow zoom in — stops right before first click at 33
+  const preZoom = interpolate(frame, [0, 30], [0.85, 1.05], {
+    easing: Easing.bezier(0.25, 0, 0.5, 1),
     extrapolateRight: 'clamp',
   });
 
-  const cursorOpacity = interpolate(frame, [30, 40], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
+  // Card flashes green on click then content swaps
+  let greenFlash = 0;
+  for (const cf of clickFrames.slice(1)) {
+    greenFlash += interpolate(frame, [cf, cf + 4, cf + 10], [0, 1, 0], {
+      extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    });
+  }
+  greenFlash = Math.min(greenFlash, 1);
 
-  const cursorY = interpolate(frame, [40, 60], [0, 30], {
-    easing: Easing.bezier(0.4, 0, 0.2, 1),
-    extrapolateRight: 'clamp',
-  });
+  // Button press on each click — squish + bounce
+  let buttonPressScale = 1;
+  for (const cf of clickFrames.slice(1)) {
+    const press = interpolate(frame, [cf - 2, cf, cf + 3, cf + 6], [1, 0.88, 1.06, 1], {
+      extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    });
+    if (frame >= cf - 2 && frame <= cf + 6) {
+      buttonPressScale = press;
+    }
+  }
 
-  // Pinwheel rotation
-  const rotation = interpolate(frame, [0, 120], [0, 90], {
-    extrapolateRight: 'extend',
-  });
+  // Cursor — appears after everything is visible
+  const cursorOpacity = interpolate(frame, [22, 28], [0, 1], { extrapolateRight: 'clamp' });
+  const cursorX = interpolate(frame, [22, 30], [1100, 960], { easing: smoothEase, extrapolateRight: 'clamp' });
+  const cursorBaseY = interpolate(frame, [22, 30], [850, 785], { easing: smoothEase, extrapolateRight: 'clamp' });
+  // Cursor dips on each click
+  let cursorDip = 0;
+  for (const cf of clickFrames.slice(1)) {
+    cursorDip += interpolate(frame, [cf - 2, cf, cf + 3], [0, 8, 0], {
+      extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    });
+  }
+  const cursorFadeOut = interpolate(frame, [141, 146], [1, 0], { extrapolateRight: 'clamp' });
+
+  // Burst out
+  const burstScale = interpolate(frame, [155, 165], [1, 1.4], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const burstOpacity = interpolate(frame, [155, 165], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
 
   return (
     <AbsoluteFill style={{ backgroundColor: theme.colors.cream }}>
-      {/* Filled rounded rectangle shapes */}
-      <div style={{
-        position: 'absolute',
-        top: 50,
-        left: 140,
-        width: 400,
-        height: 200,
-        borderRadius: 50,
-        backgroundColor: theme.colors.peachLight,
-        opacity: 0.5,
-      }} />
-      <div style={{
-        position: 'absolute',
-        top: 50,
-        right: 140,
-        width: 400,
-        height: 200,
-        borderRadius: 50,
-        backgroundColor: theme.colors.peachLight,
-        opacity: 0.5,
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: 50,
-        left: 140,
-        width: 400,
-        height: 200,
-        borderRadius: 50,
-        backgroundColor: theme.colors.peachLight,
-        opacity: 0.5,
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: 50,
-        right: 140,
-        width: 400,
-        height: 200,
-        borderRadius: 50,
-        backgroundColor: theme.colors.peachLight,
-        opacity: 0.5,
-      }} />
-
-      {/* Card */}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: `translate(-50%, -50%) scale(${cardScale})`,
-        width: 420,
-        backgroundColor: 'white',
-        borderRadius: 28,
-        padding: 32,
-        border: `3px solid ${theme.colors.amber}`,
-        boxShadow: '0 15px 50px rgba(0,0,0,0.1)',
-        opacity: cardOpacity,
+      <AbsoluteFill style={{
+        opacity: sceneInOpacity * burstOpacity,
+        transform: `scale(${sceneInScale * preZoom * (frame >= 170 ? burstScale : 1)})`,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          {/* Pinwheel icon */}
-          <div style={{
-            width: 50,
-            height: 50,
-            transform: `rotate(${rotation}deg)`,
-            display: 'flex',
-            flexWrap: 'wrap',
-          }}>
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                style={{
-                  width: 22,
-                  height: 22,
-                  backgroundColor: theme.colors.amber,
-                  borderRadius: i % 2 === 0 ? '50% 0 50% 50%' : '0 50% 50% 50%',
-                  opacity: 0.7 + (i * 0.1),
-                }}
-              />
-            ))}
-          </div>
-          <span style={{ fontSize: 22, fontWeight: 600, color: theme.colors.textDark }}>SAL speaks their language</span>
-        </div>
-
+        {/* Title — word by word, each slides up individually, all on one line */}
         <div style={{
-          background: `linear-gradient(135deg, ${theme.colors.amberLight} 0%, ${theme.colors.amber} 100%)`,
-          color: 'white',
-          padding: '16px 32px',
-          borderRadius: 32,
-          fontSize: 18,
-          fontWeight: 600,
+          position: 'absolute',
+          top: '25%',
+          left: '50%',
+          transform: 'translateX(-50%)',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-          boxShadow: `0 6px 20px ${theme.colors.amber}50`,
+          gap: 14,
+          overflow: 'hidden',
+          padding: '10px 0',
         }}>
-          <span style={{ fontSize: 20 }}>🌍</span> English, Arabic, Spanish + more
+          {['SAL', 'speaks', 'their', 'language'].map((word, i) => {
+            const wordDelay = i * 3;
+            const wordOpacity = interpolate(frame, [wordDelay, wordDelay + 5], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+            const wordY = interpolate(frame, [wordDelay, wordDelay + 7], [30, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+            return (
+              <span key={i} style={{
+                fontSize: 42,
+                fontFamily: 'Georgia, serif',
+                fontWeight: 700,
+                color: theme.colors.amber,
+                opacity: wordOpacity,
+                transform: `translateY(${wordY}px)`,
+                display: 'inline-block',
+              }}>{word}</span>
+            );
+          })}
         </div>
-      </div>
 
-      {/* Cursor */}
-      <div style={{
-        position: 'absolute',
-        top: 580 + cursorY,
-        left: 870,
-        fontSize: 32,
-        opacity: cursorOpacity,
-      }}>👆</div>
+        {/* Language card — slides up right after title */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: `translate(-50%, -50%) translateY(${interpolate(frame, [12, 22], [50, 0], { easing: smoothOut, extrapolateRight: 'clamp' })}px)`,
+          opacity: interpolate(frame, [12, 20], [0, 1], { extrapolateRight: 'clamp' }),
+          width: 500,
+          backgroundColor: greenFlash > 0
+            ? `rgba(45, 182, 104, ${greenFlash * 0.15})`
+            : 'white',
+          borderRadius: 28,
+          padding: '50px 40px',
+          border: `3px solid ${theme.colors.amber}`,
+          boxShadow: `0 15px 50px rgba(0,0,0,0.08)`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 16,
+        }}>
+          <span style={{ fontSize: 64 }}>{lang.flag}</span>
+          <div style={{
+            fontSize: 48,
+            fontFamily: 'Georgia, serif',
+            fontWeight: 700,
+            color: theme.colors.amber,
+          }}>{lang.native}</div>
+          <div style={{
+            fontSize: 22,
+            color: theme.colors.gray,
+          }}>{lang.name}</div>
+        </div>
+
+        {/* Next arrow button — fades in */}
+        <div style={{
+          position: 'absolute',
+          top: '72%',
+          left: '50%',
+          transform: `translateX(-50%) scale(${buttonPressScale})`,
+          opacity: interpolate(frame, [18, 24], [0, 1], { extrapolateRight: 'clamp' }),
+        }}>
+          <div style={{
+            background: `linear-gradient(135deg, ${theme.colors.amberLight} 0%, ${theme.colors.amber} 100%)`,
+            width: 60,
+            height: 60,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: `0 ${6 * buttonPressScale}px ${20 * buttonPressScale}px ${theme.colors.amber}40`,
+          }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Progress dots — fades in */}
+        <div style={{
+          position: 'absolute',
+          bottom: '15%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: 8,
+          opacity: interpolate(frame, [20, 26], [0, 1], { extrapolateRight: 'clamp' }),
+        }}>
+          {languages.map((_, i) => (
+            <div key={i} style={{
+              width: i === currentLang ? 24 : 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: i === currentLang ? theme.colors.amber : `${theme.colors.amber}30`,
+              transition: 'width 0.2s',
+            }} />
+          ))}
+        </div>
+
+        {/* Green SVG cursor */}
+        <svg
+          style={{
+            position: 'absolute',
+            left: cursorX,
+            top: cursorBaseY + cursorDip,
+            opacity: cursorOpacity * cursorFadeOut,
+            zIndex: 20,
+            filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.15))',
+          }}
+          width="32" height="40" viewBox="0 0 24 30" fill="none"
+        >
+          <path d="M5 2L5 22L10 17L15 26L18 24.5L13 15.5L20 15.5L5 2Z"
+            fill={theme.colors.amber} stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
@@ -1462,209 +1604,121 @@ const Scene11_NeverMiss: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const modalScale = spring({
-    frame,
-    fps,
-    config: { damping: 12, stiffness: 100 },
-  });
+  const words = ['Never', 'miss', 'a', 'booking', 'again'];
 
-  const modalOpacity = interpolate(frame, [0, 15], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
+  // Punch in
+  const sceneInOpacity = interpolate(frame, [0, 8], [0, 1], { extrapolateRight: 'clamp' });
+  const sceneInScale = interpolate(frame, [0, 8], [1.3, 1], { easing: smoothOut, extrapolateRight: 'clamp' });
 
-  const heyOpacity = interpolate(frame, [25, 40], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
-
-  const thereOpacity = interpolate(frame, [35, 50], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
+  // Card springs in
+  const modalScale = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
+  const modalOpacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
 
   // Spinning pinwheel
-  const rotation = interpolate(frame, [0, 120], [0, 360], {
-    extrapolateRight: 'extend',
-  });
+  const rotation = interpolate(frame, [0, 120], [0, 360], { extrapolateRight: 'extend' });
+
+  // Everything exits together
+  const cardFadeOut = 1; // card stays until burst
+  const cardScaleOut = 1;
+
+  // Burst out — text + card + everything at once
+  const burstScale = interpolate(frame, [60, 70], [1, 1.4], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const burstOpacity = interpolate(frame, [60, 70], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
 
   return (
     <AbsoluteFill style={{ backgroundColor: theme.colors.cream }}>
-      {/* Filled rounded rectangle shapes */}
-      <div style={{
-        position: 'absolute',
-        top: 30,
-        left: 140,
-        width: 420,
-        height: 220,
-        borderRadius: 60,
-        backgroundColor: theme.colors.peachLight,
-        opacity: 0.5,
-      }} />
-      <div style={{
-        position: 'absolute',
-        top: 30,
-        right: 140,
-        width: 420,
-        height: 220,
-        borderRadius: 60,
-        backgroundColor: theme.colors.peachLight,
-        opacity: 0.5,
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: 30,
-        left: 140,
-        width: 420,
-        height: 220,
-        borderRadius: 60,
-        backgroundColor: theme.colors.peachLight,
-        opacity: 0.5,
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: 30,
-        right: 140,
-        width: 420,
-        height: 220,
-        borderRadius: 60,
-        backgroundColor: theme.colors.peachLight,
-        opacity: 0.5,
-      }} />
-
-      {/* "Never miss" text - LEFT side */}
-      <div style={{
-        position: 'absolute',
-        left: 280,
-        top: '50%',
-        transform: 'translateY(-50%)',
+      <AbsoluteFill style={{
+        opacity: sceneInOpacity * burstOpacity,
+        transform: `scale(${sceneInScale * (frame >= 90 ? burstScale : 1)})`,
       }}>
-        <div style={{
-          fontSize: 72,
-          fontFamily: 'Georgia, serif',
-          color: theme.colors.amber,
-          fontWeight: 700,
-          opacity: heyOpacity,
-        }}>Never</div>
-        <div style={{
-          fontSize: 72,
-          fontFamily: 'Georgia, serif',
-          color: theme.colors.peach,
-          fontWeight: 400,
-          opacity: thereOpacity,
-        }}>miss</div>
-      </div>
+        {/* Filled rounded rectangle shapes */}
+        <div style={{ position: 'absolute', top: 30, left: 140, width: 420, height: 220, borderRadius: 60, backgroundColor: theme.colors.peachLight, opacity: 0.5 }} />
+        <div style={{ position: 'absolute', top: 30, right: 140, width: 420, height: 220, borderRadius: 60, backgroundColor: theme.colors.peachLight, opacity: 0.5 }} />
+        <div style={{ position: 'absolute', bottom: 30, left: 140, width: 420, height: 220, borderRadius: 60, backgroundColor: theme.colors.peachLight, opacity: 0.5 }} />
+        <div style={{ position: 'absolute', bottom: 30, right: 140, width: 420, height: 220, borderRadius: 60, backgroundColor: theme.colors.peachLight, opacity: 0.5 }} />
 
-      {/* "again" text - RIGHT side */}
-      <div style={{
-        position: 'absolute',
-        right: 280,
-        top: '50%',
-        transform: 'translateY(-50%)',
-        opacity: interpolate(frame, [45, 60], [0, 1], { extrapolateRight: 'clamp' }),
-      }}>
+        {/* Card — CENTERED, disappears after text animation */}
         <div style={{
-          fontSize: 72,
-          fontFamily: 'Georgia, serif',
-          color: theme.colors.amber,
-          fontWeight: 700,
-        }}>again</div>
-      </div>
-
-      {/* Modal - CENTERED */}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: `translate(-50%, -50%) scale(${modalScale})`,
-        width: 400,
-        backgroundColor: 'white',
-        borderRadius: 28,
-        padding: 30,
-        border: `3px solid ${theme.colors.amber}`,
-        boxShadow: '0 15px 50px rgba(0,0,0,0.12)',
-        opacity: modalOpacity,
-      }}>
-        <div style={{ fontSize: 16, color: theme.colors.gray, marginBottom: 24 }}>Your AI Receptionist</div>
-
-        {/* 5-petal flower pinwheel */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: 20,
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: `translate(-50%, -50%) scale(${modalScale * cardScaleOut})`,
+          width: 400,
+          backgroundColor: 'white',
+          borderRadius: 28,
+          padding: 30,
+          border: `3px solid ${theme.colors.amber}`,
+          boxShadow: '0 15px 50px rgba(0,0,0,0.12)',
+          opacity: modalOpacity * cardFadeOut,
         }}>
-          <div style={{
-            width: 110,
-            height: 110,
-            transform: `rotate(${rotation}deg)`,
-            position: 'relative',
-          }}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  width: 45,
-                  height: 45,
-                  backgroundColor: theme.colors.amber,
-                  borderRadius: '50% 50% 50% 0',
+          <div style={{ fontSize: 16, color: theme.colors.gray, marginBottom: 24 }}>Your AI Receptionist</div>
+
+          {/* 5-petal flower pinwheel */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+            <div style={{ width: 110, height: 110, transform: `rotate(${rotation}deg)`, position: 'relative' }}>
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div key={i} style={{
+                  position: 'absolute', top: '50%', left: '50%', width: 45, height: 45,
+                  backgroundColor: theme.colors.amber, borderRadius: '50% 50% 50% 0',
                   opacity: 0.6 + (i * 0.08),
                   transform: `translate(-50%, -50%) rotate(${i * 72}deg) translateY(-20px)`,
                   transformOrigin: 'center center',
-                }}
-              />
-            ))}
+                }} />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', color: theme.colors.gray, marginBottom: 28 }}>
+            <span style={{ color: theme.colors.amber, fontSize: 12, marginRight: 6 }}>●</span>
+            Always on...
+          </div>
+
+          {/* Buttons */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 14, alignItems: 'center' }}>
+            <div style={{ backgroundColor: theme.colors.grayLight, padding: '12px 20px', borderRadius: 12, fontSize: 14, color: theme.colors.textDark, fontWeight: 500 }}>24/7</div>
+            <div style={{ backgroundColor: theme.colors.grayLight, padding: '12px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={theme.colors.textDark} strokeWidth="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div style={{ backgroundColor: theme.colors.amber, color: 'white', padding: '12px 24px', borderRadius: 24, fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+              </svg>
+              Chat
+            </div>
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', color: theme.colors.gray, marginBottom: 28 }}>
-          <span style={{
-            color: theme.colors.amber,
-            fontSize: 12,
-            marginRight: 6,
-          }}>●</span>
-          Always on...
+        {/* Words — above the card */}
+        <div style={{
+          position: 'absolute',
+          top: '18%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: 20,
+          overflow: 'hidden',
+          padding: '20px 0',
+        }}>
+          {words.map((word, i) => {
+            const wordDelay = 5 + i * 8;
+            const wordOpacity = interpolate(frame, [wordDelay, wordDelay + 10], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+            const wordY = interpolate(frame, [wordDelay, wordDelay + 14], [50, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+            return (
+              <span key={i} style={{
+                fontSize: 80,
+                fontFamily: 'Georgia, serif',
+                fontWeight: 700,
+                color: word === 'booking' ? theme.colors.amber : theme.colors.textDark,
+                opacity: wordOpacity,
+                transform: `translateY(${wordY}px)`,
+                display: 'inline-block',
+              }}>{word}</span>
+            );
+          })}
         </div>
-
-        {/* Buttons */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 14, alignItems: 'center' }}>
-          <div style={{
-            backgroundColor: theme.colors.grayLight,
-            padding: '12px 20px',
-            borderRadius: 12,
-            fontSize: 14,
-            color: theme.colors.textDark,
-            fontWeight: 500,
-          }}>24/7</div>
-          <div style={{
-            backgroundColor: theme.colors.grayLight,
-            padding: '12px 16px',
-            borderRadius: 12,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={theme.colors.textDark} strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-          </div>
-          <div style={{
-            backgroundColor: theme.colors.amber,
-            color: 'white',
-            padding: '12px 24px',
-            borderRadius: 24,
-            fontSize: 15,
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-            </svg>
-            Chat
-          </div>
-        </div>
-      </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
@@ -1766,37 +1820,27 @@ export const MainVideo: React.FC = () => {
       </Sequence>
 
       {/* Scene 5+6: Envelope → Phone → Conversation */}
-      <Sequence from={301} durationInFrames={300}>
+      <Sequence from={301} durationInFrames={330}>
         <Scene5_EnvelopeToChat />
       </Sequence>
 
       {/* Scene 7: Grid of client messages */}
-      <Sequence from={591} durationInFrames={72}>
+      <Sequence from={621} durationInFrames={74}>
         <Scene7_ClientMessages />
       </Sequence>
 
-      {/* Scene 8: Client message typed — punches in as Scene 7 zooms out */}
-      <Sequence from={658} durationInFrames={90}>
-        <Scene8_ClientTyping />
-      </Sequence>
-
-      {/* Scene 9: SAL's reply + actions */}
-      <Sequence from={771} durationInFrames={90}>
-        <Scene9_SALReply />
-      </Sequence>
-
-      {/* Scene 10: Speaks their language */}
-      <Sequence from={861} durationInFrames={90}>
+      {/* Scene 10: Language showcase */}
+      <Sequence from={692} durationInFrames={170}>
         <Scene10_Multilingual />
       </Sequence>
 
-      {/* Scene 11: Never miss again */}
-      <Sequence from={951} durationInFrames={120}>
+      {/* Scene 11: Never miss a booking again */}
+      <Sequence from={855} durationInFrames={75}>
         <Scene11_NeverMiss />
       </Sequence>
 
-      {/* Scene 12: Final Logo */}
-      <Sequence from={1071} durationInFrames={90}>
+      {/* Scene 12: Final Logo — overlaps Scene 11 burst */}
+      <Sequence from={920} durationInFrames={90}>
         <Scene12_FinalLogo />
       </Sequence>
     </AbsoluteFill>
