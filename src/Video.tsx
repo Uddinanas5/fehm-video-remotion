@@ -136,19 +136,19 @@ const Scene1_LogoIntro: React.FC = () => {
   });
 
   // meetsal.ai mask reveal after AL is gone
-  const meetWidth = interpolate(frame, [62, 82], [0, 460], {
-    easing: smoothEase,
+  const meetWidth = interpolate(frame, [80, 97], [0, 420], {
+    easing: Easing.bezier(0.25, 0, 0.4, 1),
     extrapolateRight: 'clamp',
     extrapolateLeft: 'clamp',
   });
-  const meetOpacity = interpolate(frame, [62, 70], [0, 1], {
+  const meetOpacity = interpolate(frame, [80, 90], [0, 1], {
     extrapolateRight: 'clamp',
     extrapolateLeft: 'clamp',
   });
 
   // Gap between S icon and meetsal.ai grows smoothly
-  const meetGap = interpolate(frame, [60, 72], [0, 16], {
-    easing: smoothEase,
+  const meetGap = interpolate(frame, [78, 90], [0, 16], {
+    easing: Easing.bezier(0.25, 0, 0.4, 1),
     extrapolateRight: 'clamp',
     extrapolateLeft: 'clamp',
   });
@@ -178,7 +178,7 @@ const Scene1_LogoIntro: React.FC = () => {
         position: 'absolute',
         top: '50%',
         left: '50%',
-        transform: `translate(-50%, -50%) scale(${breatheScale}) scale(${dropScale})`,
+        transform: `translate(calc(-50% + 25px), -50%) scale(${breatheScale}) scale(${dropScale})`,
         opacity: logoOpacity * dropOpacity,
         display: 'flex',
         alignItems: 'center',
@@ -708,13 +708,19 @@ const Scene5_EnvelopeToChat: React.FC = () => {
   const phoneOpacity = interpolate(frame, [82, 90], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
   const phoneSlideY = interpolate(frame, [82, 100], [500, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
   const phoneScaleBase = 1;
-  const phoneZoom = 1;
 
-  // Pan down — steps down as each message appears
+  // Zoom in on the phone — more zoomed in
+  const phoneZoom = interpolate(frame, [82, 100], [1, 1.8], {
+    easing: smoothOut,
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
+
+  // Aggressive pan down — snaps to follow each message
   const phonePanY = interpolate(
     frame,
-    [100, 133, 158, 166, 193, 201, 226, 234, 261, 269],
-    [0, -50, -50, -110, -110, -180, -180, -240, -240, -320],
+    [100, 125, 133, 158, 166, 193, 201, 226, 234, 261, 269],
+    [0, 0, -90, -90, -190, -190, -300, -300, -420, -420, -750],
     { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }
   );
 
@@ -866,13 +872,12 @@ const Scene5_EnvelopeToChat: React.FC = () => {
           fill={theme.colors.amber} stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
       </svg>
 
-      {/* SAL label — fixed left, slides up from bottom */}
+      {/* SAL label — slides out to left after a couple seconds */}
       <div style={{
         position: 'absolute',
-        left: 180,
-        top: '45%',
-        transform: `translateY(${interpolate(frame, [85, 108], [80, -50], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })}%)`,
-        opacity: interpolate(frame, [85, 98], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) * burstDownOpacity,
+        left: interpolate(frame, [85, 108, 157, 180], [-200, 180, 180, -200], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }),
+        top: '12%',
+        opacity: interpolate(frame, [85, 98, 157, 175], [0, 1, 1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) * burstDownOpacity,
       }}>
         <div style={{
           fontSize: 72,
@@ -882,13 +887,12 @@ const Scene5_EnvelopeToChat: React.FC = () => {
         }}>SAL</div>
       </div>
 
-      {/* Answers label — fixed right, slides up from bottom */}
+      {/* Answers label — slides out to right after a couple seconds */}
       <div style={{
         position: 'absolute',
-        right: 180,
-        top: '45%',
-        transform: `translateY(${interpolate(frame, [100, 125], [80, -50], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })}%)`,
-        opacity: interpolate(frame, [100, 115], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) * burstDownOpacity,
+        right: interpolate(frame, [100, 125, 157, 180], [-250, 180, 180, -250], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }),
+        top: '12%',
+        opacity: interpolate(frame, [100, 115, 157, 175], [0, 1, 1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }) * burstDownOpacity,
       }}>
         <div style={{
           fontSize: 72,
@@ -904,7 +908,7 @@ const Scene5_EnvelopeToChat: React.FC = () => {
         top: '50%',
         left: '50%',
         transformOrigin: 'top center',
-        transform: `translate(-50%, -15%) translateY(${phoneSlideY + phonePanY + burstDownY}px) scale(${phoneScaleBase * phoneZoom})`,
+        transform: `translate(-50%, -10%) translateY(${phoneSlideY + phonePanY + burstDownY}px) scale(${phoneScaleBase * phoneZoom})`,
         opacity: phoneOpacity * burstDownOpacity,
       }}>
       <div style={{
@@ -1039,7 +1043,7 @@ const Scene7_ClientMessages: React.FC = () => {
 
   const questions = [
     'Book me a haircut for Saturday 2pm',
-    'Do you offer nail extensions?',
+    'Can I reschedule my appointment to next week?',
     'I need to cancel my Thursday appointment',
     'What are your prices for balayage?',
   ];
@@ -1054,15 +1058,16 @@ const Scene7_ClientMessages: React.FC = () => {
     extrapolateRight: 'clamp',
   });
 
-  // Cursor drifts to button center
-  const cursorOpacity = interpolate(frame, [52, 58], [0, 1], { extrapolateRight: 'clamp' });
-  const cursorX = interpolate(frame, [52, 64], [1100, 990], { easing: smoothEase, extrapolateRight: 'clamp' });
-  const cursorBaseY = interpolate(frame, [52, 64], [700, 555], { easing: smoothEase, extrapolateRight: 'clamp' });
-  const clickDip = interpolate(frame, [66, 68, 70], [0, 8, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const cursorFadeOut = interpolate(frame, [72, 76], [1, 0], { extrapolateRight: 'clamp' });
+  // Cursor appears early, slowly drifts to button, holds, then clicks
+  const cursorOpacity = interpolate(frame, [80, 88], [0, 1], { extrapolateRight: 'clamp' });
+  const cursorX = interpolate(frame, [80, 115], [1200, 990], { easing: Easing.bezier(0.25, 0, 0.4, 1), extrapolateRight: 'clamp' });
+  const cursorBaseY = interpolate(frame, [80, 115], [750, 555], { easing: Easing.bezier(0.25, 0, 0.4, 1), extrapolateRight: 'clamp' });
+  // Holds on button from 115-126, then clicks
+  const clickDip = interpolate(frame, [126, 128, 130], [0, 8, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const cursorFadeOut = interpolate(frame, [132, 136], [1, 0], { extrapolateRight: 'clamp' });
 
   // Button press effect on click
-  const buttonPress = interpolate(frame, [66, 68, 70, 73], [1, 0.92, 1.05, 1], {
+  const buttonPress = interpolate(frame, [126, 128, 130, 133], [1, 0.92, 1.05, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -1130,26 +1135,29 @@ const Scene7_ClientMessages: React.FC = () => {
             <div
               key={i}
               style={{
-                backgroundColor: 'white',
+                backgroundColor: `${theme.colors.amber}08`,
                 borderRadius: 24,
                 padding: 45,
-                boxShadow: '0 2px 15px rgba(74, 125, 255, 0.08)',
-                border: '2px solid #D0E3FF',
+                boxShadow: `0 2px 15px ${theme.colors.amber}15`,
+                border: `2px solid ${theme.colors.peachLight}`,
                 opacity: cardOpacity,
                 transform: `translateX(${spreadOffsets[i].x}px) translateY(${cardY + spreadOffsets[i].y}px)`,
                 minHeight: 200,
+                position: 'relative',
                 display: 'flex',
-                flexDirection: 'column',
+                alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
               <div style={{
-                color: theme.colors.blue,
-                fontSize: 13,
+                position: 'absolute',
+                top: 18,
+                left: 24,
+                color: theme.colors.amber,
+                fontSize: 12,
                 fontWeight: 700,
-                marginBottom: 20,
                 letterSpacing: 1,
-              }}>NEW</div>
+              }}>NEW MESSAGE</div>
               <div style={{
                 fontSize: 22,
                 color: theme.colors.textDark,
@@ -1433,7 +1441,7 @@ const Scene10_Multilingual: React.FC = () => {
   ];
 
   // Click timings — evenly spaced, slight acceleration at end
-  const clickFrames = [0, 33, 55, 75, 93, 109, 125, 139];
+  const clickFrames = [0, 45, 65, 83, 99, 115, 131, 145];
 
   // Which language is showing
   let currentLang = 0;
@@ -1447,11 +1455,12 @@ const Scene10_Multilingual: React.FC = () => {
   const lang = languages[currentLang];
 
   // Start smaller, fade in
-  const sceneInScale = interpolate(frame, [0, 10], [1.3, 1], { easing: smoothOut, extrapolateRight: 'clamp' });
-  const sceneInOpacity = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: 'clamp' });
+  const sceneInScale = interpolate(frame, [0, 15], [1.2, 1], { easing: smoothOut, extrapolateRight: 'clamp' });
+  const sceneInOpacity = interpolate(frame, [0, 12], [0, 1], { extrapolateRight: 'clamp' });
 
   // Start small, slow zoom in — stops right before first click at 33
-  const preZoom = interpolate(frame, [0, 30], [0.85, 1.05], {
+  // Zoom starts with cursor, both arrive at frame 42
+  const preZoom = interpolate(frame, [20, 42], [0.85, 1.05], {
     easing: Easing.bezier(0.25, 0, 0.5, 1),
     extrapolateRight: 'clamp',
   });
@@ -1476,10 +1485,11 @@ const Scene10_Multilingual: React.FC = () => {
     }
   }
 
-  // Cursor — appears after everything is visible
-  const cursorOpacity = interpolate(frame, [22, 28], [0, 1], { extrapolateRight: 'clamp' });
-  const cursorX = interpolate(frame, [22, 30], [1100, 960], { easing: smoothEase, extrapolateRight: 'clamp' });
-  const cursorBaseY = interpolate(frame, [22, 30], [850, 785], { easing: smoothEase, extrapolateRight: 'clamp' });
+  // Cursor — appears during zoom, arrives at button exactly when zoom finishes
+  // Cursor appears after scene settles, moves with zoom toward button
+  const cursorOpacity = interpolate(frame, [20, 26], [0, 1], { extrapolateRight: 'clamp' });
+  const cursorX = interpolate(frame, [20, 42], [1200, 960], { easing: Easing.bezier(0.25, 0, 0.4, 1), extrapolateRight: 'clamp' });
+  const cursorBaseY = interpolate(frame, [20, 42], [850, 785], { easing: Easing.bezier(0.25, 0, 0.4, 1), extrapolateRight: 'clamp' });
   // Cursor dips on each click
   let cursorDip = 0;
   for (const cf of clickFrames.slice(1)) {
@@ -1487,11 +1497,12 @@ const Scene10_Multilingual: React.FC = () => {
       extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
     });
   }
-  const cursorFadeOut = interpolate(frame, [141, 146], [1, 0], { extrapolateRight: 'clamp' });
+  const cursorFadeOut = interpolate(frame, [148, 153], [1, 0], { extrapolateRight: 'clamp' });
 
   // Burst out
-  const burstScale = interpolate(frame, [155, 165], [1, 1.4], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
-  const burstOpacity = interpolate(frame, [155, 165], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  // Pop out — quick scale up then snap down to 0
+  const burstScale = interpolate(frame, [162, 166, 170], [1, 1.15, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const burstOpacity = interpolate(frame, [166, 170], [1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
 
   return (
     <AbsoluteFill style={{ backgroundColor: theme.colors.cream }}>
@@ -1499,33 +1510,28 @@ const Scene10_Multilingual: React.FC = () => {
         opacity: sceneInOpacity * burstOpacity,
         transform: `scale(${sceneInScale * preZoom * (frame >= 170 ? burstScale : 1)})`,
       }}>
-        {/* Title — word by word, each slides up individually, all on one line */}
+        {/* Title — above the card, mask reveal left to right */}
         <div style={{
           position: 'absolute',
-          top: '25%',
+          top: '22%',
           left: '50%',
           transform: 'translateX(-50%)',
-          display: 'flex',
-          gap: 14,
           overflow: 'hidden',
-          padding: '10px 0',
+          width: interpolate(frame, [3, 20], [0, 650], {
+            easing: smoothEase,
+            extrapolateRight: 'clamp',
+            extrapolateLeft: 'clamp',
+          }),
         }}>
-          {['SAL', 'speaks', 'their', 'language'].map((word, i) => {
-            const wordDelay = i * 3;
-            const wordOpacity = interpolate(frame, [wordDelay, wordDelay + 5], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
-            const wordY = interpolate(frame, [wordDelay, wordDelay + 7], [30, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
-            return (
-              <span key={i} style={{
-                fontSize: 42,
-                fontFamily: 'Georgia, serif',
-                fontWeight: 700,
-                color: theme.colors.amber,
-                opacity: wordOpacity,
-                transform: `translateY(${wordY}px)`,
-                display: 'inline-block',
-              }}>{word}</span>
-            );
-          })}
+          <div style={{
+            fontSize: 44,
+            fontFamily: 'Georgia, serif',
+            fontWeight: 700,
+            color: theme.colors.amber,
+            whiteSpace: 'nowrap',
+            width: 650,
+            textAlign: 'center',
+          }}>SAL speaks any language</div>
         </div>
 
         {/* Language card — slides up right after title */}
@@ -1656,15 +1662,72 @@ const Scene11_NeverMiss: React.FC = () => {
     <AbsoluteFill style={{ backgroundColor: theme.colors.cream }}>
       <AbsoluteFill style={{
         opacity: sceneInOpacity * burstOpacity,
-        transform: `scale(${sceneInScale * (frame >= 90 ? burstScale : 1)})`,
+        transform: `scale(${sceneInScale * (frame >= 60 ? burstScale : 1)})`,
       }}>
-        {/* Filled rounded rectangle shapes */}
-        <div style={{ position: 'absolute', top: 30, left: 140, width: 420, height: 220, borderRadius: 60, backgroundColor: theme.colors.peachLight, opacity: 0.5 }} />
-        <div style={{ position: 'absolute', top: 30, right: 140, width: 420, height: 220, borderRadius: 60, backgroundColor: theme.colors.peachLight, opacity: 0.5 }} />
-        <div style={{ position: 'absolute', bottom: 30, left: 140, width: 420, height: 220, borderRadius: 60, backgroundColor: theme.colors.peachLight, opacity: 0.5 }} />
-        <div style={{ position: 'absolute', bottom: 30, right: 140, width: 420, height: 220, borderRadius: 60, backgroundColor: theme.colors.peachLight, opacity: 0.5 }} />
+        {/* Subtle radial glow */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 1400,
+          height: 1400,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${theme.colors.amber}12 0%, transparent 60%)`,
+        }} />
 
-        {/* Card — CENTERED, disappears after text animation */}
+        {/* Left text — "Never miss a" */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: 200,
+          transform: 'translateY(-50%)',
+        }}>
+          {['Never', 'miss', 'a'].map((word, i) => {
+            const wordDelay = 5 + i * 7;
+            const wordOpacity = interpolate(frame, [wordDelay, wordDelay + 10], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+            const wordY = interpolate(frame, [wordDelay, wordDelay + 12], [30, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+            return (
+              <div key={i} style={{
+                fontSize: 72,
+                fontFamily: 'Georgia, serif',
+                fontWeight: 700,
+                color: theme.colors.amber,
+                opacity: wordOpacity,
+                transform: `translateY(${wordY}px)`,
+                lineHeight: 1.15,
+              }}>{word}</div>
+            );
+          })}
+        </div>
+
+        {/* Right text — "booking again" */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          right: 200,
+          transform: 'translateY(-50%)',
+          textAlign: 'right',
+        }}>
+          {['booking', 'again'].map((word, i) => {
+            const wordDelay = 26 + i * 7;
+            const wordOpacity = interpolate(frame, [wordDelay, wordDelay + 10], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+            const wordY = interpolate(frame, [wordDelay, wordDelay + 12], [30, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+            return (
+              <div key={i} style={{
+                fontSize: 72,
+                fontFamily: 'Georgia, serif',
+                fontWeight: 700,
+                color: theme.colors.amber,
+                opacity: wordOpacity,
+                transform: `translateY(${wordY}px)`,
+                lineHeight: 1.15,
+              }}>{word}</div>
+            );
+          })}
+        </div>
+
+        {/* Right side — original card */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -1678,7 +1741,7 @@ const Scene11_NeverMiss: React.FC = () => {
           boxShadow: '0 15px 50px rgba(0,0,0,0.12)',
           opacity: modalOpacity * cardFadeOut,
         }}>
-          <div style={{ fontSize: 16, color: theme.colors.gray, marginBottom: 24 }}>Your AI Receptionist</div>
+          <div style={{ fontSize: 16, color: theme.colors.gray, marginBottom: 24 }}>Your Smartest Hire</div>
 
           {/* 5-petal flower pinwheel */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
@@ -1715,35 +1778,6 @@ const Scene11_NeverMiss: React.FC = () => {
               Chat
             </div>
           </div>
-        </div>
-
-        {/* Words — above the card */}
-        <div style={{
-          position: 'absolute',
-          top: '18%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          gap: 20,
-          overflow: 'hidden',
-          padding: '20px 0',
-        }}>
-          {words.map((word, i) => {
-            const wordDelay = 5 + i * 8;
-            const wordOpacity = interpolate(frame, [wordDelay, wordDelay + 10], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
-            const wordY = interpolate(frame, [wordDelay, wordDelay + 14], [50, 0], { easing: smoothOut, extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
-            return (
-              <span key={i} style={{
-                fontSize: 80,
-                fontFamily: 'Georgia, serif',
-                fontWeight: 700,
-                color: word === 'booking' ? theme.colors.amber : theme.colors.textDark,
-                opacity: wordOpacity,
-                transform: `translateY(${wordY}px)`,
-                display: 'inline-block',
-              }}>{word}</span>
-            );
-          })}
         </div>
       </AbsoluteFill>
     </AbsoluteFill>
@@ -1817,7 +1851,7 @@ const Scene12_FinalLogo: React.FC = () => {
           opacity: subtitleOpacity,
           fontFamily: 'Georgia, serif',
         }}>
-          Your AI Receptionist
+          Your Smartest Hire
         </div>
       </div>
     </AbsoluteFill>
@@ -1852,22 +1886,22 @@ export const MainVideo: React.FC = () => {
       </Sequence>
 
       {/* Scene 7: Grid of client messages */}
-      <Sequence from={621} durationInFrames={74}>
+      <Sequence from={621} durationInFrames={148}>
         <Scene7_ClientMessages />
       </Sequence>
 
-      {/* Scene 10: Language showcase */}
-      <Sequence from={692} durationInFrames={170}>
+      {/* Scene 10: Language showcase — overlaps Scene 7 exit */}
+      <Sequence from={750} durationInFrames={180}>
         <Scene10_Multilingual />
       </Sequence>
 
       {/* Scene 11: Never miss a booking again */}
-      <Sequence from={855} durationInFrames={75}>
+      <Sequence from={923} durationInFrames={75}>
         <Scene11_NeverMiss />
       </Sequence>
 
       {/* Scene 12: Final Logo — overlaps Scene 11 burst */}
-      <Sequence from={920} durationInFrames={90}>
+      <Sequence from={988} durationInFrames={90}>
         <Scene12_FinalLogo />
       </Sequence>
     </AbsoluteFill>
