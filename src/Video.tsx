@@ -53,36 +53,36 @@ const Scene1_LogoIntro: React.FC = () => {
     extrapolateRight: 'clamp',
   });
 
-  // Font size: scales up (0-20), then shrinks into icon (20-45)
-  const salFontSize = interpolate(frame, [0, 18, 35], [120, 140, 48], {
+  // Font size: scales up, holds, then shrinks into icon
+  const salFontSize = interpolate(frame, [0, 18, 40, 58], [120, 140, 140, 48], {
     easing: Easing.bezier(0.4, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
   // Grid: fades in (0-20), then fades out (20-35)
-  const gridOpacity = interpolate(frame, [3, 18, 28], [0, 0.5, 0], {
+  const gridOpacity = interpolate(frame, [3, 18, 40], [0, 0.5, 0], {
     easing: Easing.bezier(0.4, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
   // Background: green gradient → cream (starts at frame 20)
-  const bgTransition = interpolate(frame, [12, 28], [0, 1], {
+  const bgTransition = interpolate(frame, [42, 52], [0, 1], {
     easing: Easing.bezier(0.4, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
   // Text shadow fades out as it shrinks
-  const shadowOpacity = interpolate(frame, [12, 22], [0.25, 0], {
+  const shadowOpacity = interpolate(frame, [38, 48], [0.25, 0], {
     extrapolateRight: 'clamp',
   });
 
   // Icon box appears behind SAL as it shrinks
-  const iconBoxOpacity = interpolate(frame, [20, 28], [0, 1], {
+  const iconBoxOpacity = interpolate(frame, [42, 52], [0, 1], {
     easing: Easing.bezier(0.4, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
 
-  const iconBoxScale = interpolate(frame, [20, 28], [0.5, 1], {
+  const iconBoxScale = interpolate(frame, [42, 52], [0.5, 1], {
     easing: Easing.bezier(0, 0, 0.2, 1),
     extrapolateRight: 'clamp',
   });
@@ -93,7 +93,7 @@ const Scene1_LogoIntro: React.FC = () => {
     extrapolateRight: 'clamp',
   });
 
-  const textOpacity = interpolate(frame, [20, 24], [0, 1], {
+  const textOpacity = interpolate(frame, [42, 48], [0, 1], {
     extrapolateRight: 'clamp',
   });
 
@@ -117,20 +117,54 @@ const Scene1_LogoIntro: React.FC = () => {
     extrapolateLeft: 'clamp',
   });
 
+  // "AL" collapses: width shrinks from actual pixel width to 0
+  const alWidth = interpolate(frame, [42, 60], [300, 0], {
+    easing: smoothEase,
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
+  const alOpacity = interpolate(frame, [42, 55], [1, 0], {
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
+
+  // Green bg: fullscreen overlay shrinks to 0 opacity, icon box grows
+  const greenBgOpacity = interpolate(frame, [42, 60], [1, 0], {
+    easing: smoothEase,
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
+
+  // meetsal.ai mask reveal after AL is gone
+  const meetWidth = interpolate(frame, [62, 82], [0, 460], {
+    easing: smoothEase,
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
+  const meetOpacity = interpolate(frame, [62, 70], [0, 1], {
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
+
+  // Gap between S icon and meetsal.ai grows smoothly
+  const meetGap = interpolate(frame, [60, 72], [0, 16], {
+    easing: smoothEase,
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
+
   return (
-    <AbsoluteFill style={{
-      background: `linear-gradient(145deg, ${theme.colors.peachLight} 0%, ${theme.colors.peach} 50%, ${theme.colors.amber} 100%)`,
-    }}>
-      {/* Cream overlay that fades in */}
+    <AbsoluteFill style={{ backgroundColor: theme.colors.cream }}>
+      {/* Green fullscreen bg — fades out as it "shrinks" to icon */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        backgroundColor: theme.colors.cream,
-        opacity: bgTransition,
+        background: `linear-gradient(145deg, ${theme.colors.peachLight} 0%, ${theme.colors.peach} 50%, ${theme.colors.amber} 100%)`,
+        opacity: greenBgOpacity,
       }} />
 
       {/* Crosshair grid lines */}
-      <svg style={{ position: 'absolute', width: '100%', height: '100%', opacity: gridOpacity }}>
+      <svg style={{ position: 'absolute', width: '100%', height: '100%', opacity: gridOpacity, zIndex: 1 }}>
         <line x1="0" y1="33%" x2="100%" y2="33%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="10,10" />
         <line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="10,10" />
         <line x1="0" y1="67%" x2="100%" y2="67%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="10,10" />
@@ -139,83 +173,78 @@ const Scene1_LogoIntro: React.FC = () => {
         <line x1="60%" y1="0" x2="60%" y2="100%" stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="10,10" />
       </svg>
 
-      {/* SAL → S + meetsal.ai — centered lockup */}
+      {/* Content — one continuous flex row, always centered */}
       <div style={{
         position: 'absolute',
         top: '50%',
         left: '50%',
-        transform: `translate(-50%, -50%) scale(${frame < 20 ? breatheScale : interpolate(frame, [32, 97], [1, 1.65], { easing: Easing.bezier(0.42, 0, 1, 1), extrapolateRight: 'clamp', extrapolateLeft: 'clamp' })} ) scale(${dropScale})`,
+        transform: `translate(-50%, -50%) scale(${breatheScale}) scale(${dropScale})`,
         opacity: logoOpacity * dropOpacity,
+        display: 'flex',
+        alignItems: 'center',
+        zIndex: 2,
       }}>
-        {/* Phase 1: SAL text (big, centered) */}
-        {frame < 20 && (
+        {/* SAL text — one element, AL clips away via container width */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          {/* Green icon box — behind S */}
           <div style={{
-            fontFamily: 'Georgia, serif',
-            fontWeight: 400,
-            color: 'white',
-            fontSize: salFontSize,
-            textShadow: `4px 4px 12px rgba(0,0,0,${shadowOpacity})`,
-            letterSpacing: 4,
-            whiteSpace: 'nowrap',
-            textAlign: 'center',
-          }}>SAL</div>
-        )}
+            position: 'absolute',
+            left: 0,
+            top: '50%',
+            transform: `translateY(-50%) scale(${iconBoxScale})`,
+            width: 110,
+            height: 85,
+            background: `linear-gradient(145deg, ${theme.colors.amberLight} 0%, ${theme.colors.amber} 100%)`,
+            borderRadius: 18,
+            opacity: iconBoxOpacity,
+            boxShadow: '0 6px 20px rgba(45, 182, 104, 0.3)',
+          }} />
 
-        {/* Phase 2: S icon + meetsal.ai slide apart */}
-        {frame >= 20 && (
+          {/* SAL as one word — container width clips AL away */}
           <div style={{
+            position: 'relative',
+            zIndex: 1,
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            width: interpolate(frame, [42, 58], [salFontSize * 2.8, 110], {
+              easing: smoothEase,
+              extrapolateRight: 'clamp',
+              extrapolateLeft: 'clamp',
+            }),
+            height: interpolate(frame, [42, 58], [salFontSize * 1.2, 85], {
+              easing: smoothEase,
+              extrapolateRight: 'clamp',
+              extrapolateLeft: 'clamp',
+            }),
             display: 'flex',
             alignItems: 'center',
-            gap: 16,
+            justifyContent: frame >= 50 ? 'center' : 'flex-start',
           }}>
-            {/* S icon */}
             <div style={{
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 110,
-              height: 85,
-            }}>
-              <div style={{
-                position: 'absolute',
-                width: 110,
-                height: 85,
-                background: `linear-gradient(145deg, ${theme.colors.amberLight} 0%, ${theme.colors.amber} 100%)`,
-                borderRadius: 18,
-                opacity: iconBoxOpacity,
-                transform: `scale(${iconBoxScale})`,
-                boxShadow: '0 6px 20px rgba(45, 182, 104, 0.3)',
-              }} />
-              <div style={{
-                position: 'relative',
-                fontFamily: 'Georgia, serif',
-                fontWeight: 400,
-                color: 'white',
-                fontSize: salFontSize,
-                whiteSpace: 'nowrap',
-              }}>S</div>
-            </div>
-
-            {/* meetsal.ai — mask reveal from left */}
-            <div style={{
-              overflow: 'hidden',
-              width: interpolate(frame, [20, 38], [0, 460], {
-                easing: Easing.bezier(0.4, 0, 0.2, 1),
-                extrapolateRight: 'clamp',
-                extrapolateLeft: 'clamp',
-              }),
-            }}>
-              <span style={{
-                fontSize: 64,
-                fontFamily: 'Georgia, serif',
-                color: theme.colors.amber,
-                whiteSpace: 'nowrap',
-                opacity: textOpacity,
-              }}>meetsal.ai</span>
-            </div>
+              fontFamily: 'Georgia, serif',
+              fontWeight: 400,
+              color: 'white',
+              fontSize: salFontSize,
+              textShadow: `4px 4px 12px rgba(0,0,0,${shadowOpacity})`,
+              letterSpacing: 4,
+            }}>{frame < 55 ? 'SAL' : 'S'}</div>
           </div>
-        )}
+        </div>
+
+        {/* meetsal.ai — mask reveals after S settles */}
+        <div style={{
+          overflow: 'hidden',
+          width: meetWidth,
+          marginLeft: meetGap,
+        }}>
+          <span style={{
+            fontSize: 64,
+            fontFamily: 'Georgia, serif',
+            color: theme.colors.amber,
+            whiteSpace: 'nowrap',
+            opacity: meetOpacity,
+          }}>meetsal.ai</span>
+        </div>
       </div>
     </AbsoluteFill>
   );
