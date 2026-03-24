@@ -206,19 +206,17 @@ const Scene1_LogoIntro: React.FC = () => {
             zIndex: 1,
             overflow: 'hidden',
             whiteSpace: 'nowrap',
-            width: interpolate(frame, [42, 58], [salFontSize * 2.8, 110], {
+            width: frame < 42 ? undefined : interpolate(frame, [42, 52], [400, 110], {
               easing: smoothEase,
               extrapolateRight: 'clamp',
-              extrapolateLeft: 'clamp',
             }),
-            height: interpolate(frame, [42, 58], [salFontSize * 1.2, 85], {
+            height: frame < 42 ? undefined : interpolate(frame, [42, 52], [170, 85], {
               easing: smoothEase,
               extrapolateRight: 'clamp',
-              extrapolateLeft: 'clamp',
             }),
             display: 'flex',
             alignItems: 'center',
-            justifyContent: frame >= 50 ? 'center' : 'flex-start',
+            justifyContent: 'center',
           }}>
             <div style={{
               fontFamily: 'Georgia, serif',
@@ -227,7 +225,7 @@ const Scene1_LogoIntro: React.FC = () => {
               fontSize: salFontSize,
               textShadow: `4px 4px 12px rgba(0,0,0,${shadowOpacity})`,
               letterSpacing: 4,
-            }}>{frame < 55 ? 'SAL' : 'S'}</div>
+            }}>{frame < 48 ? 'SAL' : 'S'}</div>
           </div>
         </div>
 
