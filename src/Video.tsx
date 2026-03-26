@@ -492,7 +492,7 @@ const Scene4_FeatureCards: React.FC = () => {
   const cards = [
     { icon: FlashcardsIcon, name: 'Bookings', subtitle: '24/7 Scheduling', color: theme.colors.blue, borderColor: theme.colors.blueBorder },
     { icon: MindmapIcon, name: 'Replies', subtitle: 'Instant WhatsApp responses', color: theme.colors.blue, borderColor: theme.colors.blueBorder },
-    { icon: SummaryIcon, name: 'Reminders', subtitle: 'No-shows go to zero', color: theme.colors.blue, borderColor: theme.colors.blueBorder },
+    { icon: SummaryIcon, name: 'Reminders', subtitle: 'Fewer no-shows, more revenue', color: theme.colors.blue, borderColor: theme.colors.blueBorder },
   ];
 
   // Burst out at the end
